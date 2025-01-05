@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
+  transpilePackages: ["@/components/ui"], // Add this for shadcn/ui
   images: {
     remotePatterns: [
       {
@@ -19,9 +20,9 @@ const nextConfig = {
       },
     ];
   },
-  
+
   trailingSlash: true,
-  
+
   webpack: (config) => {
     config.resolve.fallback = { fs: false, net: false, tls: false };
     return config;
