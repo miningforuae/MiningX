@@ -12,7 +12,6 @@ interface NavLink {
   label: string;
   href: string;
   onClick?: () => void;
-
 }
 
 const NavBar = () => {
@@ -22,7 +21,6 @@ const NavBar = () => {
   );
 
   const router = useRouter();
-
   const { isLoading } = useGetCurrentUserQuery();
   const dispatch = useDispatch();
   const pathname = usePathname();
@@ -32,6 +30,7 @@ const NavBar = () => {
       await logout();
       dispatch(setUser(null));
       router.push("/");
+      setIsMenuOpen(false); // Close mobile menu after logout
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -39,7 +38,6 @@ const NavBar = () => {
 
   const userMenuItems: NavLink[] = [
     { label: "Profile", href: "/profile" },
-
     {
       label: "Logout",
       href: "/",
@@ -62,7 +60,6 @@ const NavBar = () => {
           <div className="flex items-center justify-between py-7">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2">
-             
               <span className="text-3xl font-bold">Miner</span>
               <div className="flex -ml-2 h-8 w-7 items-center justify-center rounded-full bg-green-500">
                 <span className="text-xl font-bold">X</span>
@@ -120,13 +117,12 @@ const NavBar = () => {
                 </Link>
               )}
               <div className="flex items-center space-x-4">
-                {/* <IconWithBadge Icon={Heart} count={0} />
-                <IconWithBadge Icon={ShoppingCart} count={0} /> */}
               </div>
             </div>
           </div>
         </div>
       </div>
+
       {/* Mobile Navigation */}
       <div className="md:hidden">
         <div className="flex items-center justify-between px-4 py-4">
@@ -138,13 +134,11 @@ const NavBar = () => {
           </button>
 
           <div className="flex items-center space-x-2">
-          <span className="text-3xl font-bold">Miner</span>
-              <div className="flex -ml-2 h-8 w-7 items-center justify-center rounded-full bg-green-500">
-                <span className="text-xl font-bold">X</span>
-              </div>
+            <span className="text-3xl font-bold">Miner</span>
+            <div className="flex -ml-2 h-8 w-7 items-center justify-center rounded-full bg-green-500">
+              <span className="text-xl font-bold">X</span>
+            </div>
           </div>
-
-          {/* <IconWithBadge Icon={ShoppingCart} count={0} /> */}
         </div>
 
         {/* Mobile Menu Overlay */}
@@ -169,25 +163,61 @@ const NavBar = () => {
               </div>
 
               <nav className="mt-6 flex flex-col space-y-4">
+                {/* User Profile Section for Mobile */}
+                {isAuthenticated && (
+                  <div className="mb-4">
+                    <div className="flex items-center space-x-2 py-2">
+                      <User className="h-5 w-5" />
+                      <span className="text-lg font-medium">
+                        {user?.firstName || "My Account"}
+                      </span>
+                    </div>
+                    <div className="ml-7 flex flex-col space-y-2">
+                      {userMenuItems.map((item) => (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          onClick={(e) => {
+                            if (item.onClick) {
+                              e.preventDefault();
+                              item.onClick();
+                            } else {
+                              setIsMenuOpen(false);
+                            }
+                          }}
+                          className="text-gray-300 transition-colors hover:text-green-500"
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Navigation Links */}
                 {navLinks.map((link) => (
-                  <a
+                  <Link
                     key={link.label}
                     href={link.href}
                     className="py-2 text-lg transition-colors hover:text-green-500"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 ))}
+                
                 <div className="my-4 h-px bg-gray-800" />
-              
 
-                <a
-                  href="/auth/signin"
-                  className="py-2 transition-colors hover:text-green-500"
-                >
-                  LOGIN / REGISTER
-                </a>
+                {/* Login/Register Link (only show if not authenticated) */}
+                {!isAuthenticated && !isLoading && (
+                  <Link
+                    href="/auth/signin"
+                    className="py-2 transition-colors hover:text-green-500"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    LOGIN / REGISTER
+                  </Link>
+                )}
               </nav>
             </div>
           </div>
@@ -196,7 +226,5 @@ const NavBar = () => {
     </header>
   );
 };
-
-
 
 export default NavBar;
