@@ -138,10 +138,10 @@ const NavBar = () => {
           </button>
 
           <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500">
-              <span className="text-xl font-bold">W</span>
-            </div>
-            <span className="text-lg font-bold">wemine</span>
+          <span className="text-3xl font-bold">Miner</span>
+              <div className="flex -ml-2 h-8 w-7 items-center justify-center rounded-full bg-green-500">
+                <span className="text-xl font-bold">X</span>
+              </div>
           </div>
 
           {/* <IconWithBadge Icon={ShoppingCart} count={0} /> */}
@@ -180,15 +180,10 @@ const NavBar = () => {
                   </a>
                 ))}
                 <div className="my-4 h-px bg-gray-800" />
-                <a
-                  href="#"
-                  className="py-2 transition-colors hover:text-green-500"
-                >
-                  WISHLIST
-                </a>
+              
 
                 <a
-                  href="#"
+                  href="/auth/signin"
                   className="py-2 transition-colors hover:text-green-500"
                 >
                   LOGIN / REGISTER
