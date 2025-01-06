@@ -8,6 +8,7 @@ export const authApiSlice = baseApiSlice.injectEndpoints({
         url: 'api/v1/register',
         method: 'POST',
         body: credentials,
+        credentials: 'include', 
       }),
       invalidatesTags: ['User'],
     }),
@@ -17,6 +18,7 @@ export const authApiSlice = baseApiSlice.injectEndpoints({
         url: 'api/v1/login',
         method: 'POST',
         body: credentials,
+        credentials: 'include', 
       }),
       invalidatesTags: ['User'],
     }),
@@ -25,6 +27,7 @@ export const authApiSlice = baseApiSlice.injectEndpoints({
       query: () => ({
         url: 'api/v1/logoutUser',
         method: 'GET',
+        credentials: 'include', 
       }),
       invalidatesTags: ['User'],
     }),
@@ -33,6 +36,7 @@ export const authApiSlice = baseApiSlice.injectEndpoints({
       query: () => ({
         url: 'api/v1/profile',
         method: 'GET',
+       
       }),
       providesTags: ['User'],
     }),
