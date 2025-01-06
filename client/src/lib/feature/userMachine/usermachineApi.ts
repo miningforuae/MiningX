@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axiosInstance from '@/utils/axiosInstance';
 
 
 import { RootState } from '@/lib/store/store';
@@ -22,7 +22,7 @@ export const assignMachineToUser = createAsyncThunk<
   'userMachine/assignMachine',
   async ({ userId, machineId }, { rejectWithValue }) => {
     try {
-      const response = await axios.post<UserMachine>('/api/v1/assign', { 
+      const response = await axiosInstance.post<UserMachine>('/api/v1/assign', { 
         userId, 
         machineId 
       });
@@ -43,7 +43,7 @@ export const fetchUserMachines = createAsyncThunk<
   async (userIdentifier, { rejectWithValue }) => {
     try {
       console.log('Fetching with identifier:', userIdentifier);
-      const response = await axios.get<UserMachine[]>(`/api/v1/userMachine/${userIdentifier}`);
+      const response = await axiosInstance.get<UserMachine[]>(`/api/v1/userMachine/${userIdentifier}`);
       console.log('Response:', response.data);
       return response.data;
     } catch (error: any) {
@@ -60,7 +60,7 @@ export const updateMonthlyProfit = createAsyncThunk<
   'userMachine/updateProfit',
   async ({ userMachineId, profitAmount }, { rejectWithValue }) => {
     try {
-      const response = await axios.patch<UserMachine>(`/api/v1/profit/${userMachineId}`, { 
+      const response = await axiosInstance.patch<UserMachine>(`/api/v1/profit/${userMachineId}`, { 
         profitAmount 
       });
       return response.data;
@@ -78,7 +78,7 @@ export const removeUserMachine = createAsyncThunk<
   'userMachine/removeMachine',
   async (userMachineId, { rejectWithValue }) => {
     try {
-      await axios.delete(`/api/v1/${userMachineId}`);
+      await axiosInstance.delete(`/api/v1/${userMachineId}`);
       return userMachineId;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to remove machine');
@@ -94,7 +94,7 @@ export const fetchAllUserMachines = createAsyncThunk<
   'userMachine/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get<UserMachine[]>('/api/v1/admin/all');
+      const response = await axiosInstance.get<UserMachine[]>('/api/v1/admin/all');
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch all user machines');
@@ -110,7 +110,7 @@ export const fetchProfitUpdateStatus = createAsyncThunk<
   'userMachine/fetchProfitUpdateStatus',
   async (userMachineId, { rejectWithValue }) => {
     try {
-      const response = await axios.get<ProfitUpdateStatus>(`/api/v1/profit/update-status/${userMachineId}`);
+      const response = await axiosInstance.get<ProfitUpdateStatus>(`/api/v1/profit/update-status/${userMachineId}`);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch profit update status');
@@ -136,7 +136,7 @@ export const fetchUserTotalProfit = createAsyncThunk<
 
       // URL encode the identifier in case it's an email address
       const encodedIdentifier = encodeURIComponent(userIdentifier);
-      const response = await axios.get<UserProfitSummary>(
+      const response = await axiosInstance.get<UserProfitSummary>(
         `/api/v1/total-profit/${encodedIdentifier}`
       );
       
@@ -169,7 +169,7 @@ export const fetchAdminTransactions = createAsyncThunk<
   'userMachine/fetchAdminTransactions',
   async ({ page = 1, limit = 20, sortBy = 'transactionDate', order = 'desc' }, { rejectWithValue }) => {
     try {
-      const response = await axios.get<TransactionResponse>(
+      const response = await axiosInstance.get<TransactionResponse>(
         '/api/v1/admin/transactions',
         { params: { page, limit, sortBy, order } }
       );
@@ -189,7 +189,7 @@ export const processWithdrawal = createAsyncThunk<
   'userMachine/processWithdrawal',
   async (withdrawalData, { rejectWithValue }) => {
     try {
-      const response = await axios.post<WithdrawalResponse>(
+      const response = await axiosInstance.post<WithdrawalResponse>(
         '/api/v1/withdrawal', 
         withdrawalData
       );
@@ -211,7 +211,7 @@ export const fetchUserTransactions = createAsyncThunk<
   'userMachine/fetchTransactions',
   async ({ userIdentifier, page = 1, limit = 10 }, { rejectWithValue }) => {
     try {
-      const response = await axios.get<TransactionResponse>(
+      const response = await axiosInstance.get<TransactionResponse>(
         `/api/v1/transactions/${userIdentifier}`,
         { params: { page, limit } }
       );
