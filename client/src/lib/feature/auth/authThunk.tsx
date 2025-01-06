@@ -36,7 +36,8 @@ export const authApiSlice = baseApiSlice.injectEndpoints({
       query: () => ({
         url: 'api/v1/profile',
         method: 'GET',
-       
+        credentials: 'include',
+
       }),
       providesTags: ['User'],
     }),
