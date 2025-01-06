@@ -6,7 +6,7 @@ import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useLoginMutation } from "@/lib/feature/auth/authThunk";
 import { useDispatch } from "react-redux";
-import { setCredentials } from "@/lib/feature/auth/authSlice"; // Remove setUser import
+import { setCredentials } from "@/lib/feature/auth/authSlice";
 import 'react-toastify/dist/ReactToastify.css';
 import { store } from "@/lib/store/store";
 
@@ -31,14 +31,11 @@ export default function LoginPage() {
       const userData = await login({ email, password }).unwrap();
       console.log('Login response:', userData);
       
-      // Make sure we dispatch the complete user data
       dispatch(setCredentials(userData));
-      
       console.log('Dispatched to Redux:', userData);
       
       toast.success("Login successful!");
       
-      // Add a small delay and check auth state before navigation
       setTimeout(() => {
         const authState = store.getState().auth;
         console.log('Auth State before navigation:', authState);
@@ -57,14 +54,15 @@ export default function LoginPage() {
       }
     }
   };
+
   return (
-    <div className="min-h-screen bg-primary text-white p-8">
+    <div className="min-h-screen bg-primary text-white p-4 sm:p-8">
       <ToastContainer />
-      {/* Header */}
-      <div className="max-w-xl justify-center items-center mx-auto mb-16">
-        <h1 className="text-[68px] font-medium ml-24">My account</h1>
-        <div className="text-white text-sm -mt-2">
-          <Link href="/" className="hover:text-white ml-48">
+      {/* Header - Responsive */}
+      <div className="max-w-xl mx-auto mb-8 sm:mb-16 text-center sm:text-left">
+        <h1 className="text-4xl sm:text-[68px] font-medium sm:ml-24">My account</h1>
+        <div className="text-white text-sm mt-2 sm:-mt-2">
+          <Link href="/" className="hover:text-white sm:ml-48">
             HOME
           </Link>
           <span className="mx-2">/</span>
@@ -72,28 +70,28 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Login Container */}
-      <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-16">
+      {/* Login Container - Responsive Grid */}
+      <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-16">
         {/* Left Side - Login Form */}
-        <div>
-          <h2 className="text-2xl font-bold mb-6">LOGIN</h2>
+        <div className="w-full px-4 sm:px-0">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">LOGIN</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block mb-2">
-               email address
+              <label className="block mb-2 text-sm sm:text-base">
+                Email address
                 <span className="text-red-500 ml-1">*</span>
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 bg-transparent border border-gray-700 rounded focus:outline-none focus:border-white"
+                className="w-full p-2 bg-transparent border border-gray-700 rounded focus:outline-none focus:border-white text-sm sm:text-base"
                 required
               />
             </div>
 
             <div>
-              <label className="block mb-2">
+              <label className="block mb-2 text-sm sm:text-base">
                 Password
                 <span className="text-red-500 ml-1">*</span>
               </label>
@@ -102,7 +100,7 @@ export default function LoginPage() {
                   type={passwordVisible ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-2 bg-transparent border border-gray-700 rounded focus:outline-none focus:border-white"
+                  className="w-full p-2 bg-transparent border border-gray-700 rounded focus:outline-none focus:border-white text-sm sm:text-base"
                   required
                 />
                 {passwordVisible ? (
@@ -123,18 +121,18 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="w-full bg-green-500 text-white py-3 rounded hover:bg-green-600 transition-colors"
+              className="w-full bg-green-500 text-white py-2 sm:py-3 rounded hover:bg-green-600 transition-colors text-sm sm:text-base"
               disabled={isLoading}
             >
               {isLoading ? "Logging in..." : "LOG IN"}
             </button>
 
-            <div className="flex items-center justify-between">
-              <label className="flex items-center space-x-2 cursor-pointer">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0">
+              <label className="flex items-center space-x-2 cursor-pointer text-sm sm:text-base">
                 <input type="checkbox" className="rounded border-gray-700 bg-transparent" />
                 <span>Remember me</span>
               </label>
-              <Link href="/lost-password" className="text-green-500 hover:text-green-400">
+              <Link href="/lost-password" className="text-green-500 hover:text-green-400 text-sm sm:text-base">
                 Lost your password?
               </Link>
             </div>
@@ -142,22 +140,20 @@ export default function LoginPage() {
         </div>
 
         {/* Right Side - Registration Info */}
-        <div>
-          <h2 className="text-2xl mb-16 mx-auto w-30">REGISTER</h2>
-          <p className="text-gray-300 mb-3 text-sm">
+        <div className="w-full px-4 sm:px-0 mt-8 md:mt-0">
+          <h2 className="text-xl sm:text-2xl mb-8 sm:mb-16">REGISTER</h2>
+          <p className="text-gray-300 mb-6 text-sm sm:text-base">
             Registering for this site allows you to access your order status and history. Just fill
             in the fields below, and we&#39;ll get a new account set up for you in no time. We will
             only ask you for information necessary to make the purchase process faster and easier.
           </p>
           <Link href="/auth/signup">
-            <button className="bg-white text-black py-2 px-4 rounded hover:bg-gray-200 transition-colors mx-auto w-30">
+            <button className="w-full sm:w-auto bg-white text-black py-2 px-4 rounded hover:bg-gray-200 transition-colors text-sm sm:text-base">
               REGISTER
             </button>
           </Link>
         </div>
       </div>
-
-
     </div>
   );
 }
