@@ -30,7 +30,7 @@ const NavBar = () => {
       await logout();
       dispatch(setUser(null));
       router.push("/");
-      setIsMenuOpen(false); // Close mobile menu after logout
+      setIsMenuOpen(false);
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -125,6 +125,7 @@ const NavBar = () => {
 
       {/* Mobile Navigation */}
       <div className="md:hidden">
+        {/* Mobile Header */}
         <div className="flex items-center justify-between px-4 py-4">
           <button
             onClick={() => setIsMenuOpen(true)}
@@ -133,12 +134,38 @@ const NavBar = () => {
             <Menu className="h-6 w-6" />
           </button>
 
-          <div className="flex items-center space-x-2">
+          {/* Center Logo */}
+          <Link href="/" className="flex items-center space-x-2">
             <span className="text-3xl font-bold">Miner</span>
             <div className="flex -ml-2 h-8 w-7 items-center justify-center rounded-full bg-green-500">
               <span className="text-xl font-bold">X</span>
             </div>
-          </div>
+          </Link>
+
+          {/* User Menu Items */}
+          {isAuthenticated ? (
+            <div className="flex items-center space-x-4">
+              <Link
+                href="/profile"
+                className="text-sm font-medium text-white hover:text-green-500"
+              >
+                <User className="h-5 w-5" />
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="text-sm font-medium text-white hover:text-green-500"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/auth/signin"
+              className="text-sm font-medium text-white hover:text-green-500"
+            >
+              Login
+            </Link>
+          )}
         </div>
 
         {/* Mobile Menu Overlay */}
@@ -163,37 +190,6 @@ const NavBar = () => {
               </div>
 
               <nav className="mt-6 flex flex-col space-y-4">
-                {/* User Profile Section for Mobile */}
-                {isAuthenticated && (
-                  <div className="mb-4">
-                    <div className="flex items-center space-x-2 py-2">
-                      <User className="h-5 w-5" />
-                      <span className="text-lg font-medium">
-                        {user?.firstName || "My Account"}
-                      </span>
-                    </div>
-                    <div className="ml-7 flex flex-col space-y-2">
-                      {userMenuItems.map((item) => (
-                        <Link
-                          key={item.label}
-                          href={item.href}
-                          onClick={(e) => {
-                            if (item.onClick) {
-                              e.preventDefault();
-                              item.onClick();
-                            } else {
-                              setIsMenuOpen(false);
-                            }
-                          }}
-                          className="text-gray-300 transition-colors hover:text-green-500"
-                        >
-                          {item.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
                 {/* Navigation Links */}
                 {navLinks.map((link) => (
                   <Link
@@ -205,19 +201,6 @@ const NavBar = () => {
                     {link.label}
                   </Link>
                 ))}
-                
-                <div className="my-4 h-px bg-gray-800" />
-
-                {/* Login/Register Link (only show if not authenticated) */}
-                {!isAuthenticated && !isLoading && (
-                  <Link
-                    href="/auth/signin"
-                    className="py-2 transition-colors hover:text-green-500"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    LOGIN / REGISTER
-                  </Link>
-                )}
               </nav>
             </div>
           </div>
