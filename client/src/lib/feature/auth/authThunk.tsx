@@ -41,7 +41,7 @@ export const authApiSlice = baseApiSlice.injectEndpoints({
       }),
       providesTags: ['User'],
     }),
-
+     /////
     updateProfile: builder.mutation<User, Partial<User>>({
       query: (updates) => ({
         url: 'api/v1/updateProfile',
