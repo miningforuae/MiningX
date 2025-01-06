@@ -78,7 +78,7 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-gradient-to-b from-primary to-gray-900 md:p-8 text-white flex flex-col">
       <ToastContainer />
       {/* Header */}
-      <div className="mx-auto mb-12 max-w-3xl items-center justify-center text-center">
+      <div className="mx-auto mt-7 mb-12 max-w-3xl items-center justify-center text-center">
         <h1 className="md:text-6xl text-3xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-green-600">
           Create account
         </h1>
