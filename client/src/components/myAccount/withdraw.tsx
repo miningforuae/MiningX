@@ -120,7 +120,7 @@ const WithdrawalDashboard = () => {
       <Alert className="border-yellow-500/20 bg-yellow-500/10">
         <AlertCircle className="h-4 w-4 text-yellow-500" />
         <AlertDescription className="text-yellow-500">
-          Please log in to view your mining dashboard.
+          Loading................
         </AlertDescription>
       </Alert>
     );

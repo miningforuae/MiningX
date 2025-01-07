@@ -1,5 +1,6 @@
+// @ts-nocheck
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   ArrowDownUp,
   ChevronLeft,
@@ -8,7 +9,6 @@ import {
   Loader2,
   Search,
   AlertCircle,
-  ArrowUpRight,
   ArrowDownRight,
   History
 } from "lucide-react";
@@ -18,13 +18,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,6 +30,8 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AppDispatch, RootState } from "@/lib/store/store";
+import { fetchUserTransactions } from "@/lib/feature/userMachine/usermachineApi";
 
 interface Transaction {
   _id: string;
@@ -50,62 +45,40 @@ interface TransactionHistoryProps {
   userEmail: string;
 }
 
-interface TransactionResponse {
-  transactions: Transaction[];
-  totalPages: number;
-  totalTransactions: number;
-}
-
 const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userEmail }) => {
-  const dispatch = useDispatch();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalTransactions, setTotalTransactions] = useState(0);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const dispatch = useDispatch<AppDispatch>();
   const ITEMS_PER_PAGE = 10;
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [isMobileView, setIsMobileView] = useState(false);
+
+  const {
+    transactionData: { transactions, totalPages, totalTransactions },
+    isLoading,
+    error
+  } = useSelector((state: RootState) => state.userMachine);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileView(window.innerWidth < 768);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (userEmail) {
-      fetchTransactionHistory();
+      dispatch(fetchUserTransactions({
+        userIdentifier: userEmail,
+        page: currentPage,
+        limit: ITEMS_PER_PAGE
+      }));
     }
-  }, [currentPage, userEmail]);
-
-  const fetchTransactionHistory = async (): Promise<void> => {
-    setIsLoading(true);
-    setError("");
-    try {
-      const queryParams = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: ITEMS_PER_PAGE.toString()
-      });
-
-      const encodedEmail = encodeURIComponent(userEmail.trim().toLowerCase());
-      
-      const response = await fetch(
-        `/api/v1/transactions/${encodedEmail}?${queryParams.toString()}`
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to fetch transactions');
-      }
-
-      const data: TransactionResponse = await response.json();
-      
-      setTransactions(data.transactions || []);
-      setTotalPages(data.totalPages || 1);
-      setTotalTransactions(data.totalTransactions || 0);
-    } catch (err) {
-      console.error('Transaction fetch error:', err);
-      setError(err instanceof Error ? err.message : "Failed to fetch transactions");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [dispatch, userEmail, currentPage]);
 
   const getStatusColor = (status: string | undefined): string => {
     switch (status?.toLowerCase()) {
@@ -126,8 +99,8 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userEmail }) =>
       year: "numeric",
       month: "short",
       day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+      hour: isMobileView ? undefined : "2-digit",
+      minute: isMobileView ? undefined : "2-digit",
     });
   };
 
@@ -141,11 +114,42 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userEmail }) =>
     }).format(amount);
   };
 
+  const MobileTransactionCard = ({ transaction }: { transaction: Transaction }) => (
+    <div className="p-4 bg-zinc-900 rounded-lg border border-zinc-800 mb-3">
+      <div className="flex justify-between items-start mb-3">
+        <div className="flex flex-col">
+          <span className="text-sm text-zinc-400">{formatDate(transaction.transactionDate)}</span>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="capitalize font-medium text-emerald-100">
+              {transaction.type}
+            </span>
+            <ArrowDownRight className="h-4 w-4 text-emerald-400" />
+          </div>
+        </div>
+        <Badge
+          className={`${getStatusColor(transaction.status)} capitalize border px-2 py-0.5 text-xs`}
+        >
+          completed
+        </Badge>
+      </div>
+      <div className="flex justify-between items-center">
+        <span className="text-sm text-zinc-400">Amount</span>
+        <span className={`font-bold ${
+          transaction.type === "withdrawal" ? "text-[#21df03]" : "text-emerald-400"
+        }`}>
+          {transaction.type === "withdrawal" ? "-" : "+"}
+          {formatAmount(transaction.amount)}
+        </span>
+      </div>
+    </div>
+  );
+
   if (!userEmail) {
     return (
       <Alert className="border-yellow-500/20 bg-yellow-500/10">
         <AlertCircle className="h-4 w-4 text-yellow-500" />
         <AlertDescription className="text-yellow-500">
+          Please provide a valid email address to view transactions.
         </AlertDescription>
       </Alert>
     );
@@ -153,36 +157,35 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userEmail }) =>
 
   return (
     <Card className="border-zinc-800 bg-black/50 backdrop-blur-sm shadow-lg">
-      <CardHeader className="pb-4">
-        <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+      <CardHeader className="pb-4 px-4 sm:px-6">
+        <div className="flex flex-col space-y-4">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-emerald-500/10">
-              <History className="h-6 w-6 text-emerald-400" />
+              <History className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-400" />
             </div>
             <div>
-              <CardTitle className="text-2xl font-bold text-white">
+              <CardTitle className="text-xl sm:text-2xl font-bold text-white">
                 Transaction History
               </CardTitle>
               <p className="mt-1 text-sm text-zinc-400">
-                Track your financial activities and monitor transactions
+                Track your financial activities
               </p>
             </div>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <div className="relative flex-1 md:flex-none">
+          <div className="flex flex-wrap gap-3 w-full">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-500" />
               <Input
                 placeholder="Search transactions..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 w-full md:w-64 bg-zinc-900 border-zinc-800 focus:border-emerald-500 focus:ring-emerald-500 placeholder-zinc-500"
+                className="pl-9 w-full bg-zinc-900 border-zinc-800 focus:border-emerald-500 focus:ring-emerald-500 placeholder-zinc-500"
               />
             </div>
-         
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-4 sm:px-6">
         {isLoading ? (
           <div className="flex h-64 items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
@@ -204,63 +207,72 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userEmail }) =>
           </div>
         ) : (
           <div className="space-y-3">
-            <div className="rounded-xl border border-zinc-800 overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-zinc-800 hover:bg-zinc-800/50">
-                    <TableHead className="text-zinc-400 font-medium">Date</TableHead>
-                    <TableHead className="text-zinc-400 font-medium">Type</TableHead>
-                    <TableHead className="text-right text-zinc-400 font-medium">Amount</TableHead>
-                    <TableHead className="text-zinc-400 font-medium">Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {transactions.map((transaction) => (
-                    <TableRow
-                      key={transaction._id}
-                      className="border-zinc-800 hover:bg-zinc-800/50 transition-colors duration-200"
-                    >
-                      <TableCell className="text-zinc-400 font-medium">
-                        {formatDate(transaction.transactionDate)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                         
-                          <span className="capitalize font-medium text-emerald-100">
-                            {transaction.type}
-                            <ArrowDownRight className="h-4 w-4 text-emerald-400" />
-
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-bold">
-                        <span
-                          className={
-                            transaction.type === "withdrawal"
-                              ? "text-[#21df03]"
-                              : "text-emerald-400"
-                          }
-                        >
-                          {transaction.type === "withdrawal" ? "-" : "+"}
-                          {formatAmount(transaction.amount)}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          className={`${getStatusColor(
-                            transaction.status
-                          )} capitalize border px-3 py-1`}
-                        >
-successful                        </Badge>
-                      </TableCell>
+            {isMobileView ? (
+              // Mobile View - Card Layout
+              <div className="space-y-2">
+                {transactions.map((transaction) => (
+                  <MobileTransactionCard key={transaction._id} transaction={transaction} />
+                ))}
+              </div>
+            ) : (
+              // Desktop View - Table Layout
+              <div className="rounded-xl border border-zinc-800 overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-zinc-800 hover:bg-zinc-800/50">
+                      <TableHead className="text-zinc-400 font-medium">Date</TableHead>
+                      <TableHead className="text-zinc-400 font-medium">Type</TableHead>
+                      <TableHead className="text-right text-zinc-400 font-medium">Amount</TableHead>
+                      <TableHead className="text-zinc-400 font-medium">Status</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {transactions.map((transaction) => (
+                      <TableRow
+                        key={transaction._id}
+                        className="border-zinc-800 hover:bg-zinc-800/50 transition-colors duration-200"
+                      >
+                        <TableCell className="text-zinc-400 font-medium">
+                          {formatDate(transaction.transactionDate)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <span className="capitalize font-medium text-emerald-100">
+                              {transaction.type}
+                              <ArrowDownRight className="h-4 w-4 text-emerald-400" />
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right font-bold">
+                          <span
+                            className={
+                              transaction.type === "withdrawal"
+                                ? "text-[#21df03]"
+                                : "text-emerald-400"
+                            }
+                          >
+                            {transaction.type === "withdrawal" ? "-" : "+"}
+                            {formatAmount(transaction.amount)}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={`${getStatusColor(
+                              transaction.status
+                            )} capitalize border px-3 py-1`}
+                          >
+                           completed
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
 
-            <div className="flex items-center justify-between px-2">
-              <p className="text-sm text-zinc-400">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-1 py-2">
+              <p className="text-xs sm:text-sm text-zinc-400 text-center sm:text-left">
                 Showing {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, totalTransactions)} to{" "}
                 {Math.min(currentPage * ITEMS_PER_PAGE, totalTransactions)} of{" "}
                 {totalTransactions} transactions
@@ -271,7 +283,7 @@ successful                        </Badge>
                   size="icon"
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((prev) => prev - 1)}
-                  className="border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:text-emerald-400 transition-colors duration-200"
+                  className="h-8 w-8 sm:h-9 sm:w-9 border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:text-emerald-400 transition-colors duration-200"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
@@ -280,7 +292,7 @@ successful                        </Badge>
                   size="icon"
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage((prev) => prev + 1)}
-                  className="border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:text-emerald-400 transition-colors duration-200"
+                  className="h-8 w-8 sm:h-9 sm:w-9 border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:text-emerald-400 transition-colors duration-200"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>

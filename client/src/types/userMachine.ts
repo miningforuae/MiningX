@@ -35,11 +35,11 @@ export interface Transaction {
   _id: string;
   user: string;
   amount: number;
-  transactionDate: Date;
-  type: 'withdrawal' | 'profit';
-  details: string;
+  transactionDate: Date | string; // Add string type to handle date strings
+  type: 'withdrawal' | 'deposit'; // Changed from 'profit' to match your component
+  status: 'completed' | 'pending' | 'failed'; // Add status field
+  details?: string; // Make details optional
 }
-
 export interface WithdrawalResponse {
   message: string;
   transaction: Transaction;
@@ -74,8 +74,7 @@ export interface TransactionResponse {
   currentPage: number;
   totalTransactions: number;
 }
-
- export interface UserMachineState {
+export interface UserMachineState {
   userMachines: UserMachine[];
   allUserMachines: UserMachine[];
   transactionData: {
@@ -83,10 +82,20 @@ export interface TransactionResponse {
     totalPages: number;
     currentPage: number;
     totalTransactions: number;
-    
   };
   userProfit: UserProfitSummary | null;
   isLoading: boolean;
   error: string | null;
-  
+  selectedTransaction?: Transaction; // Optional: if you need to track selected transaction
+  searchQuery?: string; // Optional: if you implement search
+  statusFilter?: string; // Optional: if you implement filtering
+}
+export interface TransactionFilter {
+  page?: number;
+  limit?: number;
+  status?: 'completed' | 'pending' | 'failed';
+  type?: 'withdrawal' | 'deposit';
+  startDate?: string;
+  endDate?: string;
+  searchQuery?: string;
 }

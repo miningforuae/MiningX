@@ -1,7 +1,7 @@
 // apiSlice.ts
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backendminingx-production.up.railway.app';
+const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://backendminingx-production.up.railway.app';
 
 export const baseApiSlice = createApi({
   reducerPath: 'api',

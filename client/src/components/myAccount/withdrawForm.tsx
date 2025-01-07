@@ -109,51 +109,55 @@ const WithdrawalDialog: React.FC<WithdrawalDialogProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-      <div className="px-48"> {/* Container with padding */}
-  <Button
-    size="lg"
-    className="bg-gradient-to-br p-8 from-emerald-500 via-emerald-600 to-emerald-700 hover:from-emerald-600 hover:via-emerald-700 hover:to-emerald-800 text-white font-medium shadow-lg shadow-emerald-500/20 transition-all duration-300 ease-out hover:shadow-emerald-500/30 hover:scale-[1.02] w-full "
-  >
-    <DollarSign className="mr-2 h-10 w-10 text-4xl" />
-    Withdraw Funds
-  </Button>
-</div>
+        {/* Responsive container with padding */}
+        <div className="px-4 sm:px-8 md:px-12 lg:px-48">
+          <Button
+            size="lg"
+            className="bg-gradient-to-br p-4 sm:p-8 from-emerald-500 via-emerald-600 to-emerald-700 hover:from-emerald-600 hover:via-emerald-700 hover:to-emerald-800 text-white font-medium shadow-lg shadow-emerald-500/20 transition-all duration-300 ease-out hover:shadow-emerald-500/30 hover:scale-[1.02] w-full"
+          >
+            <DollarSign className="mr-2 h-6 w-6 sm:h-10 sm:w-10 text-2xl sm:text-4xl" />
+            Withdraw Funds
+          </Button>
+        </div>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md bg-zinc-900 border border-zinc-800 shadow-2xl shadow-emerald-500/10">
+
+      <DialogContent className="sm:max-w-md bg-zinc-900 border border-zinc-800 shadow-2xl shadow-emerald-500/10 mx-4 sm:mx-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl text-emerald-50 font-bold flex items-center gap-3 mb-4">
+          <DialogTitle className="text-xl sm:text-2xl text-emerald-50 font-bold flex items-center gap-3 mb-4">
             <div className="p-2 bg-emerald-500/10 rounded-lg">
-              <DollarSign className="h-7 w-7 text-emerald-400" />
+              <DollarSign className="h-6 w-6 sm:h-7 sm:w-7 text-emerald-400" />
             </div>
             Withdraw Funds
           </DialogTitle>
           <DialogDescription className="space-y-4">
-            <div className="flex flex-col gap-1 p-4 bg-zinc-950 rounded-lg border border-zinc-800">
-              <span className="text-zinc-400">Available Balance</span>
-              <span className="text-2xl font-bold text-emerald-400">
-                ${availableBalance?.toFixed(2)}
+            <div className="flex flex-col gap-1 p-3 sm:p-4 bg-zinc-950 rounded-lg border border-zinc-800">
+              <span className="text-sm sm:text-base text-zinc-400">Available Balance</span>
+              <span className="text-xl sm:text-2xl font-bold text-emerald-400">
+                ${availableBalance?.toFixed(0)}
               </span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-zinc-400 bg-zinc-950/50 p-3 rounded-lg">
-              <Info className="h-4 w-4 text-red" />
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-zinc-300 bg-zinc-950/50 p-2 sm:p-3 rounded-lg">
+              <Info className="h-4 w-4 text-emerald-400" />
               Minimum withdrawal amount is ${MIN_WITHDRAWAL}
             </div>
           </DialogDescription>
         </DialogHeader>
 
         {showSuccess ? (
-          <div className="py-8 text-center">
-            <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-emerald-500/20 p-3 text-emerald-400 animate-bounce">
-              <Check className="h-8 w-8" />
+          <div className="py-6 sm:py-8 text-center">
+            <div className="mx-auto mb-4 h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-emerald-500/20 p-3 text-emerald-400 animate-bounce">
+              <Check className="h-6 w-6 sm:h-8 sm:w-8" />
             </div>
-            <h3 className="mb-2 text-lg font-bold text-emerald-400">Withdrawal Successful!</h3>
-            <p className="text-zinc-400">
+            <h3 className="mb-2 text-base sm:text-lg font-bold text-emerald-400">
+              Withdrawal Successful!
+            </h3>
+            <p className="text-sm sm:text-base text-zinc-400">
               Your withdrawal of ${parseFloat(amount).toFixed(2)} is being processed
             </p>
           </div>
         ) : (
-          <form onSubmit={handleWithdrawal} className="mt-4 space-y-6">
-            <div className="space-y-3">
+          <form onSubmit={handleWithdrawal} className="mt-4 space-y-4 sm:space-y-6">
+            <div className="space-y-2 sm:space-y-3">
               <label
                 htmlFor="amount"
                 className="text-sm font-medium text-zinc-300"
@@ -174,36 +178,36 @@ const WithdrawalDialog: React.FC<WithdrawalDialogProps> = ({
                   min={MIN_WITHDRAWAL}
                   step="0.01"
                   disabled={isLoading}
-                  className="pl-10 bg-zinc-950 border-zinc-800 focus:border-emerald-500 focus:ring-emerald-500 text-emerald-400 font-bold text-lg h-12"
+                  className="pl-10 bg-zinc-950 border-zinc-800 focus:border-emerald-500 focus:ring-emerald-500 text-emerald-400 font-bold text-base sm:text-lg h-10 sm:h-12"
                 />
               </div>
             </div>
 
             {error && (
-              <Alert className="border-red-500/20 bg-red-500/10">
-                <AlertCircle className="h-4 w-4 text-red-400" />
-                <AlertDescription className="ml-2 text-red-400">
+              <Alert className="border-orange-500/20 bg-orange-500/10">
+                <AlertCircle className="h-4 w-4 text-orange-400" />
+                <AlertDescription className="ml-2 text-orange-400 font-medium">
                   {error}
                 </AlertDescription>
               </Alert>
             )}
 
             <DialogFooter>
-              <div className="flex w-full flex-col gap-3">
+              <div className="flex w-full flex-col gap-2 sm:gap-3">
                 <Button
                   type="submit"
                   disabled={isLoading || !amount}
-                  className="w-full bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 hover:from-emerald-600 hover:via-emerald-700 hover:to-emerald-800 text-white font-medium h-12 text-lg shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 hover:from-emerald-600 hover:via-emerald-700 hover:to-emerald-800 text-white font-medium h-10 sm:h-12 text-base sm:text-lg shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                      <Loader2 className="mr-2 h-5 w-5 sm:h-6 sm:w-6 animate-spin" />
                       Processing...
                     </>
                   ) : (
                     <>
                       Confirm Withdrawal
-                      <ArrowRight className="ml-2 h-6 w-6" />
+                      <ArrowRight className="ml-2 h-5 w-5 sm:h-6 sm:w-6" />
                     </>
                   )}
                 </Button>
@@ -212,7 +216,7 @@ const WithdrawalDialog: React.FC<WithdrawalDialogProps> = ({
                   variant="ghost"
                   disabled={isLoading}
                   onClick={() => setIsOpen(false)}
-                  className="w-full text-zinc-400 hover:text-white hover:bg-zinc-800 h-11"
+                  className="w-full text-zinc-400 hover:text-white hover:bg-zinc-800 h-9 sm:h-11"
                 >
                   Cancel
                 </Button>

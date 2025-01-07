@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backendminingx-production.up.railway.app';
+const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL|| 'https://backendminingx-production.up.railway.app';
 
 // Create axios instance with default config
 const axiosInstance = axios.create({
@@ -12,7 +12,6 @@ const axiosInstance = axios.create({
   }
 });
 
-// Response interceptor for handling errors
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {

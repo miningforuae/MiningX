@@ -7,6 +7,7 @@ import { logout, setUser } from "@/lib/feature/auth/authSlice";
 import { useGetCurrentUserQuery } from "@/lib/feature/auth/authThunk";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
+import { SpanStatus } from "next/dist/trace";
 
 interface NavLink {
   label: string;
@@ -135,7 +136,7 @@ const NavBar = () => {
           </button>
 
           {/* Center Logo */}
-          <Link href="/" className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2 ml-5">
             <span className="text-3xl font-bold">Miner</span>
             <div className="flex -ml-2 h-8 w-7 items-center justify-center rounded-full bg-green-500">
               <span className="text-xl font-bold">X</span>
@@ -144,12 +145,14 @@ const NavBar = () => {
 
           {/* User Menu Items */}
           {isAuthenticated ? (
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               <Link
                 href="/profile"
                 className="text-sm font-medium text-white hover:text-green-500"
               >
-                <User className="h-5 w-5" />
+
+               <span className="text-green-500 font-bold l">Profile</span>
+                {/* <User className="h-5 w-5" /> */}
               </Link>
               <button
                 onClick={handleLogout}
