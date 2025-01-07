@@ -40,7 +40,7 @@ export const AdminNavbar = () => {
 
   return (
     <>
-      <header className="hidden md:block w-full flex-col bg-black">
+      <header className="hidden w-full flex-col bg-black md:block">
         <nav className="mx-1  items-center justify-between rounded-2xl bg-gray-800 px-6 py-3 shadow-sm md:mx-11 md:flex">
           <div className="flex space-x-3 md:space-x-9">
             <Link
@@ -62,9 +62,12 @@ export const AdminNavbar = () => {
               Add Machine{" "}
             </Link>
             <Link href="/Assign" className="text-gray-300 hover:text-[#21eb00]">
-              Sign Machine{" "}
+              Assign Machine{" "}
             </Link>
-            <Link href="/AllTransaction" className="text-gray-300 hover:text-[#21eb00]">
+            <Link
+              href="/AllTransaction"
+              className="text-gray-300 hover:text-[#21eb00]"
+            >
               All Transaction{" "}
             </Link>
           </div>
