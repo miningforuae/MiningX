@@ -40,7 +40,7 @@ export const AdminNavbar = () => {
 
   return (
     <>
-      <header className="w-full flex-col bg-black">
+      <header className="hidden md:block w-full flex-col bg-black">
         <nav className="mx-1  items-center justify-between rounded-2xl bg-gray-800 px-6 py-3 shadow-sm md:mx-11 md:flex">
           <div className="flex space-x-3 md:space-x-9">
             <Link
