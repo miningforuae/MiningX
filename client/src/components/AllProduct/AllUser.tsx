@@ -105,7 +105,7 @@ export default function AllUsersPage() {
   };
 
   const handleRowClick = (userId: string) => {
-    router.push(`/AllUser/${userId}`);
+    // router.push(`/AllUser/${userId}`);
   };
 
   return (
