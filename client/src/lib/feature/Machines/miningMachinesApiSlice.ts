@@ -3,20 +3,22 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export const miningMachinesApiSlice = createApi({
   reducerPath: 'miningMachinesApi',
-  baseQuery: fetchBaseQuery({ baseUrl: '/api/v1' }), // Adjust your base URL accordingly
+  baseQuery: fetchBaseQuery({ 
+    baseUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://backendminingx-production.up.railway.app'
+  }),
   tagTypes: ['MiningMachine'],
   endpoints: (builder) => ({
     getAllMiningMachines: builder.query<Machine[], void>({
-      query: () => '/mining-machines',
+      query: () => '/api/v1/mining-machines', // Make sure this matches your backend route
       providesTags: ['MiningMachine'],
     }),
     getMiningMachineById: builder.query({
-      query: (id) => `/mining-machines/${id}`,
+      query: (id) => `/api/v1/mining-machines/${id}`,
       providesTags: (result, error, id) => [{ type: 'MiningMachine', id }],
     }),
     createMiningMachine: builder.mutation({
       query: (newMachine) => ({
-        url: '/mining-machines',
+        url: '/api/v1/mining-machines',
         method: 'POST',
         body: newMachine,
       }),
@@ -24,7 +26,7 @@ export const miningMachinesApiSlice = createApi({
     }),
     updateMiningMachine: builder.mutation({
       query: ({ id, ...data }) => ({
-        url: `/mining-machines/${id}`,
+        url: `/api/v1/mining-machines/${id}`,
         method: 'PUT',
         body: data,
       }),
@@ -32,7 +34,7 @@ export const miningMachinesApiSlice = createApi({
     }),
     deleteMiningMachine: builder.mutation({
       query: (id) => ({
-        url: `/mining-machines/${id}`,
+        url: `/api/v1/mining-machines/${id}`,
         method: 'DELETE',
       }),
       invalidatesTags: (result, error, id) => [{ type: 'MiningMachine', id }],

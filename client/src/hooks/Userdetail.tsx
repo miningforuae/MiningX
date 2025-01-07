@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import axiosInstance from '@/utils/axiosInstance';
 
 export interface User {
   _id: string;  // Use _id instead of id for MongoDB
@@ -19,7 +20,7 @@ export const useUsers = () => {
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get('/api/v1/admin/users');
+      const response = await axiosInstance.get('/api/v1/admin/users');
       setUsers(response.data);
       setError(null);
     } catch (err: any) {
