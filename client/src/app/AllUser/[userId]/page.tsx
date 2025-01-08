@@ -110,7 +110,6 @@ const UserDetailsPage = () => {
           {trend && (
             <div className="flex items-center text-green-400">
               <TrendingUp className="mr-1 h-4 w-4" />
-              <span className="text-sm">+{trend}%</span>
             </div>
           )}
         </div>
@@ -215,7 +214,7 @@ const UserDetailsPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Shield className="h-5 w-5 text-blue-400" />
-                  <span>Assigned Machines</span>
+                  <span className="text-white">Assigned Machines</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -259,7 +258,7 @@ const UserDetailsPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Activity className="h-5 w-5 text-blue-400" />
-                  <span>Transaction History</span>
+                  <span className="text-white">Transaction History</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
