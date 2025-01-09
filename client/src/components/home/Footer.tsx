@@ -100,7 +100,7 @@ const Footer = () => {
         <div className="mt-8 border-t border-gray-800 pt-6">
           <div className="flex flex-col items-center justify-between md:flex-row">
             <p className="mb-4 text-sm text-gray-400 md:mb-0">
-              © {new Date().getFullYear()} Wemine Technologies. All Rights
+              © {new Date().getFullYear()} MineX Technologies. All Rights
               Reserved.
             </p>
 

@@ -3,6 +3,8 @@
 'use client'
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useDebounce } from 'use-debounce';
+
 import {
   ArrowDownUp,
   ChevronLeft,
@@ -56,7 +58,7 @@ const AdminTransactionHistory = () => {
   const [isMobileView, setIsMobileView] = useState(false);
 
   const withdrawalState = useSelector((state: RootState) => state.withdrawal);
-  const { withdrawals, isLoading, error, pagination } = withdrawalState;
+  const { allWithdrawals: withdrawals, isLoading, error, pagination } = withdrawalState;
 
   useEffect(() => {
     const handleResize = () => {
@@ -68,16 +70,24 @@ const AdminTransactionHistory = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  useEffect(() => {
-    dispatch(fetchAllWithdrawals({
-      page: currentPage,
-      limit: ITEMS_PER_PAGE,
-      status: statusFilter !== "all" ? statusFilter : undefined,
-      sortBy: sortField,
-      sortOrder,
-      search: searchQuery
-    }));
-  }, [dispatch, currentPage, statusFilter, sortField, sortOrder, searchQuery]);
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
+
+ // In your component
+ useEffect(() => {
+  dispatch(fetchAllWithdrawals({
+    page: currentPage,
+    limit: ITEMS_PER_PAGE,
+    status: statusFilter !== "all" ? statusFilter : undefined,
+    sortBy: sortField,
+    sortOrder,
+    search: debouncedSearchQuery
+  }));
+}, [dispatch, currentPage, statusFilter, sortField, sortOrder, debouncedSearchQuery]);
+
+// Add this to check the data
+useEffect(() => {
+  console.log('Current withdrawals:', withdrawals);
+}, [withdrawals]);
 
   const getStatusColor = (status: string): string => {
     switch (status.toLowerCase()) {
@@ -86,7 +96,7 @@ const AdminTransactionHistory = () => {
       case "pending":
         return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
       case "rejected":
-        return "bg-red-500/10 text-red-400 border-red-500/20";
+        return "bg-red-500/10 text-red border-red-500/20";
       default:
         return "bg-zinc-500/10 text-zinc-400 border-zinc-500/20";
     }
@@ -183,7 +193,6 @@ const AdminTransactionHistory = () => {
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -246,7 +255,6 @@ const AdminTransactionHistory = () => {
                           )}
                         </div>
                       </TableHead>
-                      <TableHead className="text-zinc-400 font-medium">Comment</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -258,7 +266,11 @@ const AdminTransactionHistory = () => {
                         <TableCell className="text-zinc-400 font-medium">
                           {formatDate(withdrawal.transactionDate)}
                         </TableCell>
+                      
                         <TableCell className="text-zinc-300">
+                        <div className="text-white font-bold">   {withdrawal.user.firstName}
+                        {withdrawal.user.lastName}</div>
+
                           {withdrawal.user.email}
                         </TableCell>
                         <TableCell>
@@ -271,9 +283,7 @@ const AdminTransactionHistory = () => {
                         <TableCell className="text-right font-bold text-[#21df03]">
                           -{formatAmount(withdrawal.amount)}
                         </TableCell>
-                        <TableCell className="text-zinc-400">
-                          {withdrawal.adminComment || '-'}
-                        </TableCell>
+                      
                       </TableRow>
                     ))}
                   </TableBody>

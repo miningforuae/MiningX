@@ -250,6 +250,25 @@ const withdrawalSlice = createSlice({
       state.isLoading = false;
       state.error = action.payload || 'Failed to fetch withdrawal statistics';
     });
+    builder.addCase(fetchAllWithdrawals.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    });
+    
+    builder.addCase(fetchAllWithdrawals.fulfilled, (state, action) => {
+      state.isLoading = false;
+      state.allWithdrawals = action.payload.withdrawals; // Verify this matches the API response structure
+      state.pagination = {
+        currentPage: action.payload.currentPage,
+        totalPages: action.payload.totalPages,
+        totalWithdrawals: action.payload.totalWithdrawals
+      };
+    });
+    
+    builder.addCase(fetchAllWithdrawals.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload || 'Failed to fetch all withdrawals';
+    });
   }
 });
 

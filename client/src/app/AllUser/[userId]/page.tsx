@@ -26,9 +26,9 @@ import { useUsers } from "@/hooks/Userdetail";
 import {
   fetchUserMachines,
   fetchUserTotalProfit,
-  fetchUserTransactions,
 } from "@/lib/feature/userMachine/usermachineApi";
 import { AppDispatch } from "@/lib/store/store";
+import { fetchUserWithdrawals } from "@/lib/feature/withdraw/withdrawalSlice";
 
 interface RootState {
   userMachine: {
@@ -69,7 +69,7 @@ const UserDetailsPage = () => {
     if (userId) {
       dispatch(fetchUserMachines(userId));
       dispatch(fetchUserTotalProfit(userId));
-      dispatch(fetchUserTransactions({ userIdentifier: userId }));
+      dispatch(fetchUserWithdrawals({ userIdentifier: userId }));
     }
   }, [dispatch, userId]);
 
