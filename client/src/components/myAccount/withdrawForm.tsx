@@ -20,8 +20,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { processWithdrawal } from "@/lib/feature/userMachine/usermachineApi";
 import { AppDispatch } from "@/lib/store/store";
+import {  requestWithdrawal } from "@/lib/feature/withdraw/withdrawalSlice";
 
 interface WithdrawalDialogProps {
   availableBalance: number;
@@ -83,7 +83,7 @@ const WithdrawalDialog: React.FC<WithdrawalDialogProps> = ({
 
     try {
       await dispatch(
-        processWithdrawal({
+        requestWithdrawal({
           email: userEmail,
           amount: parseFloat(amount),
         })

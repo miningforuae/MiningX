@@ -1,285 +1,313 @@
 'use client'
-import React, { useState, useEffect } from 'react';
-import { 
-  DollarSign, 
-  Search, 
-  ArrowUpDown,
-  Calendar,
-  User,
-} from 'lucide-react';
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '@/lib/store/store';
-import { fetchAdminTransactions } from '@/lib/feature/userMachine/usermachineApi';
+  AlertCircle,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  Search,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { AppDispatch, RootState } from "@/lib/store/store";
+import {
+  fetchPendingWithdrawals,
+  processWithdrawalRequest,
+  fetchWithdrawalStats,
+} from "@/lib/feature/withdraw/withdrawalSlice";
 
-// Define interfaces for type safety
-interface User {
-  firstName: string;
-  lastName: string;
-  email: string;
-}
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
-interface Transaction {
-  _id: string;
-  user?: User;
-  amount: number;
-  type: string;
-  transactionDate: string;
-  details?: string;
-}
-
-interface TransactionData {
-  transactions: Transaction[];
-  totalPages: number;
-  currentPage: number;
-  totalTransactions: number;
-}
-
-const AdminTransactionsPage = () => {
+const AdminWithdrawalDashboard = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('transactionDate');
-  const [order, setOrder] = useState<'asc' | 'desc'>('desc');
-  const [currentPage, setCurrentPage] = useState(1);
-  const limit = 20;
+  const ITEMS_PER_PAGE = 10;
 
-  const { transactionData, isLoading, error } = useSelector((state: RootState) => state.userMachine);
-  const { transactions, totalPages, totalTransactions } = transactionData as unknown as TransactionData;
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedWithdrawal, setSelectedWithdrawal] = useState<any>(null);
+  const [adminComment, setAdminComment] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const withdrawalState = useSelector((state: RootState) => state.withdrawal);
+  const { pendingWithdrawals, stats, isLoading, error, pagination } = withdrawalState;
 
   useEffect(() => {
-    dispatch(fetchAdminTransactions({ 
-      page: currentPage, 
-      limit, 
-      sortBy, 
-      order 
-    }));
-  }, [dispatch, currentPage, sortBy, order]);
+    dispatch(fetchPendingWithdrawals({ page: currentPage, limit: ITEMS_PER_PAGE }));
+    dispatch(fetchWithdrawalStats());
+  }, [dispatch, currentPage]);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const formatAmount = (amount: number) => {
+  const formatAmount = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'USD',
+      minimumFractionDigits: 2,
     }).format(amount);
   };
 
-  const handleSort = (field: string) => {
-    if (sortBy === field) {
-      setOrder(order === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(field);
-      setOrder('desc');
-    }
+  const formatDate = (dateString: string): string => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
-  const filteredTransactions = transactions?.filter(transaction => 
-    transaction.user?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    transaction.user?.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    transaction.user?.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    transaction.type.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  const handleProcess = async (action: 'approved' | 'rejected') => {
+    if (!selectedWithdrawal) return;
+
+    setIsProcessing(true);
+    try {
+      await dispatch(processWithdrawalRequest({
+        transactionId: selectedWithdrawal._id,
+        action,
+        adminComment,
+      })).unwrap();
+      
+      // Refresh data
+      dispatch(fetchPendingWithdrawals({ page: currentPage, limit: ITEMS_PER_PAGE }));
+      dispatch(fetchWithdrawalStats());
+      
+      setSelectedWithdrawal(null);
+      setAdminComment("");
+    } catch (error) {
+      console.error("Error processing withdrawal:", error);
+    }
+    setIsProcessing(false);
+  };
+
+  const filteredWithdrawals = pendingWithdrawals.filter(withdrawal =>
+    withdrawal.user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    withdrawal.amount.toString().includes(searchQuery)
+  );
 
   return (
-    <div className="min-h-screen bg-black text-gray-100 p-6">
-      <Card className="bg-gray-800 border-gray-700">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-4 text-2xl font-bold text-gray-100">
-            <DollarSign className="w-8 h-8" />
-            <span>Transaction Management Dashboard</span>
-          </CardTitle>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            <Card className="bg-gray-700 border-gray-600">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-400">Total Transactions</p>
-                    <p className="text-2xl font-bold">{totalTransactions || 0}</p>
-                  </div>
-                  <ArrowUpDown className="w-8 h-8 text-blue-400" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </CardHeader>
-        
-        <CardContent>
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-lg mb-4">
-              {error}
+    <div className="space-y-6">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="border-zinc-800 bg-black/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-zinc-400">Pending Withdrawals</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-between items-baseline">
+              <div className="text-2xl font-bold text-white">{stats?.pending.count || 0}</div>
+              <div className="text-sm font-medium text-emerald-400">
+                {formatAmount(stats?.pending.amount || 0)}
+              </div>
             </div>
-          )}
+          </CardContent>
+        </Card>
+        <Card className="border-zinc-800 bg-black/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-zinc-400">Approved Withdrawals</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-between items-baseline">
+              <div className="text-2xl font-bold text-white">{stats?.approved.count || 0}</div>
+              <div className="text-sm font-medium text-emerald-400">
+                {formatAmount(stats?.approved.amount || 0)}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-zinc-800 bg-black/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-zinc-400">Rejected Withdrawals</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-white">{stats?.rejected.count || 0}</div>
+          </CardContent>
+        </Card>
+      </div>
 
-          <div className="flex flex-col md:flex-row gap-4 mb-4">
+      {/* Main Content */}
+      <Card className="border-zinc-800 bg-black/50">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col space-y-4">
+            <CardTitle className="text-xl font-bold text-white">
+              Pending Withdrawal Requests
+            </CardTitle>
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <Input 
-                placeholder="Search by user or transaction type"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-blue-500"
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-500" />
+              <Input
+                placeholder="Search by email or amount..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 bg-zinc-900 border-zinc-800"
               />
             </div>
-            
-            <Select 
-              value={sortBy} 
-              onValueChange={(value) => handleSort(value)}
-            >
-              <SelectTrigger className="w-48 bg-gray-700 border-gray-600 text-gray-100">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-700 border-gray-600">
-                <SelectItem value="transactionDate">Date</SelectItem>
-                <SelectItem value="amount">Amount</SelectItem>
-                <SelectItem value="type">Type</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
-
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-black hover:bg-gray-700">
-                  <TableHead className="text-white font-medium">User</TableHead>
-                  <TableHead className="text-white font-medium">Amount</TableHead>
-                  <TableHead className="text-white font-medium">Type</TableHead>
-                  <TableHead className="text-white font-medium">Date</TableHead>
-                  <TableHead className="text-white font-medium">Details</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center text-gray-400">
-                      Loading transactions...
-                    </TableCell>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex h-64 items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
+            </div>
+          ) : error ? (
+            <Alert className="border-red-500/20 bg-red-500/10">
+              <AlertCircle className="h-4 w-4 text-red-400" />
+              <AlertDescription className="text-red-400">{error}</AlertDescription>
+            </Alert>
+          ) : filteredWithdrawals.length === 0 ? (
+            <div className="flex h-64 flex-col items-center justify-center text-zinc-400">
+              <Clock className="h-12 w-12 mb-4" />
+              <p className="text-lg font-medium">No pending withdrawals</p>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-zinc-800 overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-zinc-800">
+                    <TableHead className="text-zinc-400">User</TableHead>
+                    <TableHead className="text-zinc-400">Date</TableHead>
+                    <TableHead className="text-right text-zinc-400">Amount</TableHead>
+                    <TableHead className="text-right text-zinc-400">Actions</TableHead>
                   </TableRow>
-                ) : filteredTransactions.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center text-gray-400">
-                      No transactions found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredTransactions.map((transaction) => (
-                    <TableRow 
-                      key={transaction._id} 
-                      className="bg-gray-700 hover:bg-gray-600 transition-colors"
+                </TableHeader>
+                <TableBody>
+                  {filteredWithdrawals.map((withdrawal) => (
+                    <TableRow
+                      key={withdrawal._id}
+                      className="border-zinc-800"
                     >
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <User className="w-4 h-4 text-gray-400" />
-                          <div>
-                            <div className="font-medium text-gray-100">
-                              {transaction.user?.firstName} {transaction.user?.lastName}
-                            </div>
-                            <div className="text-sm text-gray-400">
-                              {transaction.user?.email}
-                            </div>
-                          </div>
+                      <TableCell className="font-medium">
+                        {withdrawal.user.email}
+                      </TableCell>
+                      <TableCell>{formatDate(withdrawal.transactionDate)}</TableCell>
+                      <TableCell className="text-right font-bold text-emerald-400">
+                        {formatAmount(withdrawal.amount)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            onClick={() => setSelectedWithdrawal(withdrawal)}
+                            variant="outline"
+                            size="sm"
+                            className="border-emerald-500/20 hover:bg-emerald-500/10 text-emerald-400"
+                          >
+                            Process
+                          </Button>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className={`font-medium text-[#21e602]`}>
-                          {formatAmount(transaction.amount)}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-[#21e602] bg-[#335b54] px-2 py-1 rounded-full text-xs font-semibold">
-                          {transaction.type}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                          {formatDate(transaction.transactionDate)}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-gray-400">
-                        {transaction.details || 'No details provided'}
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          {totalPages > 1 && (
-            <div className="flex justify-center space-x-2 mt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                className="bg-gray-700 border-gray-600 text-gray-100 hover:bg-gray-600"
-              >
-                Previous
-              </Button>
-              <div className="flex items-center space-x-2">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setCurrentPage(page)}
-                    className={`
-                      ${currentPage === page 
-                        ? 'bg-blue-500 text-white' 
-                        : 'bg-gray-700 border-gray-600 text-gray-100 hover:bg-gray-600'
-                      }
-                    `}
-                  >
-                    {page}
-                  </Button>
-                ))}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-                className="bg-gray-700 border-gray-600 text-gray-100 hover:bg-gray-600"
-              >
-                Next
-              </Button>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           )}
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between mt-4">
+            <p className="text-sm text-zinc-400">
+              Showing {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, pagination.totalWithdrawals)} to{" "}
+              {Math.min(currentPage * ITEMS_PER_PAGE, pagination.totalWithdrawals)} of{" "}
+              {pagination.totalWithdrawals} withdrawals
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((prev) => prev - 1)}
+                className="border-zinc-800"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                disabled={currentPage === pagination.totalPages}
+                onClick={() => setCurrentPage((prev) => prev + 1)}
+                className="border-zinc-800"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Process Withdrawal Dialog */}
+      <Dialog open={!!selectedWithdrawal} onOpenChange={() => setSelectedWithdrawal(null)}>
+        <DialogContent className="bg-zinc-900 border-zinc-800">
+          <DialogHeader>
+            <DialogTitle>Process Withdrawal Request</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm text-zinc-400">User</label>
+                <p className="font-medium">{selectedWithdrawal?.user.email}</p>
+              </div>
+              <div>
+                <label className="text-sm text-zinc-400">Amount</label>
+                <p className="font-medium text-emerald-400">
+                  {selectedWithdrawal && formatAmount(selectedWithdrawal.amount)}
+                </p>
+              </div>
+            </div>
+            <div>
+              <label className="text-sm text-zinc-400">Admin Comment</label>
+              <Textarea
+                value={adminComment}
+                onChange={(e) => setAdminComment(e.target.value)}
+                placeholder="Add a comment (optional)"
+                className="mt-1 bg-zinc-800 border-zinc-700"
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button
+              onClick={() => handleProcess('rejected')}
+              variant="destructive"
+              disabled={isProcessing}
+              className="flex-1"
+            >
+              <XCircle className="h-4 w-4 mr-2" />
+              Reject
+            </Button>
+            <Button
+              onClick={() => handleProcess('approved')}
+              className="flex-1 bg-emerald-500 hover:bg-emerald-600"
+              disabled={isProcessing}
+            >
+              <CheckCircle2 className="h-4 w-4 mr-2" />
+              Approve
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
-export default AdminTransactionsPage;
+export default AdminWithdrawalDashboard;

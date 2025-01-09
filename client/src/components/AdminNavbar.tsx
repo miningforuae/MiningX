@@ -68,6 +68,12 @@ export const AdminNavbar = () => {
               href="/AllTransaction"
               className="text-gray-300 hover:text-[#21eb00]"
             >
+               Transaction Action{" "}
+            </Link>
+            <Link
+              href="/AdminTran"
+              className="text-gray-300 hover:text-[#21eb00]"
+            >
               All Transaction{" "}
             </Link>
           </div>

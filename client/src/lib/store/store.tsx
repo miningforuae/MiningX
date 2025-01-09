@@ -7,21 +7,20 @@ import {
 } from 'redux-persist';
 import { createTransform } from 'redux-persist';
 import type { WebStorage } from 'redux-persist/lib/types';
-// Import storage with type assertion
 import storage from 'redux-persist/lib/storage';
-// Import the constants from the correct location
 import { FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist/es/constants';
 import { adminApiSlice } from '../feature/auth/adminApiSlice';
 import authReducer from '../feature/auth/authSlice';
 import userMachineReducer from '../feature/userMachine/usermachineApi';
 import { baseApiSlice } from './apiSlice';
 import { miningMachinesApiSlice } from '../feature/Machines/miningMachinesApiSlice';
+import withdrawalReducer from '../feature/withdraw/withdrawalSlice'
 
-// Define persist keys as constants
 const PERSIST_KEYS = {
   ROOT: 'root',
   AUTH: 'auth',
   USER_MACHINE: 'userMachine',
+  WITHDRAWAL: 'withdrawal',  
 } as const;
 
 interface PersistConfig {
@@ -33,17 +32,19 @@ interface PersistConfig {
 const persistConfig: PersistConfig = {
   key: PERSIST_KEYS.ROOT,
   storage,
-  whitelist: [PERSIST_KEYS.AUTH, PERSIST_KEYS.USER_MACHINE],
+  whitelist: [PERSIST_KEYS.AUTH, PERSIST_KEYS.USER_MACHINE, PERSIST_KEYS.WITHDRAWAL], // Add WITHDRAWAL
 };
 
 const persistedAuthReducer = persistReducer(persistConfig, authReducer);
 const persistedUserMachineReducer = persistReducer(persistConfig, userMachineReducer);
+const persistedWithdrawalReducer = persistReducer(persistConfig, withdrawalReducer); // Add this
 
 export const store = configureStore({
   reducer: {
     [baseApiSlice.reducerPath]: baseApiSlice.reducer,
     [PERSIST_KEYS.AUTH]: persistedAuthReducer,
     [PERSIST_KEYS.USER_MACHINE]: persistedUserMachineReducer,
+    [PERSIST_KEYS.WITHDRAWAL]: persistedWithdrawalReducer, // Add this
     [miningMachinesApiSlice.reducerPath]: miningMachinesApiSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
@@ -59,6 +60,5 @@ export const store = configureStore({
 
 export const persistor = persistStore(store);
 
-// Infer the `RootState` and `AppDispatch` types from the store itself
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

@@ -1,3 +1,6 @@
+// @ts-nocheck
+
+'use client'
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -9,7 +12,8 @@ import {
   Search,
   AlertCircle,
   ArrowDownRight,
-  History
+  History,
+  Filter
 } from "lucide-react";
 import {
   Card,
@@ -27,35 +31,32 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AppDispatch, RootState } from "@/lib/store/store";
 import { Withdrawal } from "@/types/withdrawals";
-import { fetchUserWithdrawals } from "@/lib/feature/withdraw/withdrawalSlice";
+import { fetchAllWithdrawals } from "@/lib/feature/withdraw/withdrawalSlice";
 
-interface TransactionHistoryProps {
-  userEmail: string;
-}
-
-const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userEmail }) => {
+const AdminTransactionHistory = () => {
   const dispatch = useDispatch<AppDispatch>();
   const ITEMS_PER_PAGE = 10;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortField, setSortField] = useState("transactionDate");
+  const [sortOrder, setSortOrder] = useState("desc");
   const [isMobileView, setIsMobileView] = useState(false);
 
   const withdrawalState = useSelector((state: RootState) => state.withdrawal);
-
-  // Add default values to handle initial state
-  const withdrawals = withdrawalState?.withdrawals ?? [];
-  const isLoading = withdrawalState?.isLoading ?? false;
-  const error = withdrawalState?.error ?? null;
-  const pagination = withdrawalState?.pagination ?? {
-    currentPage: 1,
-    totalPages: 1,
-    totalWithdrawals: 0
-  };
+  const { withdrawals, isLoading, error, pagination } = withdrawalState;
 
   useEffect(() => {
     const handleResize = () => {
@@ -68,14 +69,15 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userEmail }) =>
   }, []);
 
   useEffect(() => {
-    if (userEmail) {
-      dispatch(fetchUserWithdrawals({
-        email: userEmail,  // Pass email instead of userId
-        page: currentPage,
-        limit: ITEMS_PER_PAGE
-      }));
-    }
-  }, [dispatch, userEmail, currentPage]);
+    dispatch(fetchAllWithdrawals({
+      page: currentPage,
+      limit: ITEMS_PER_PAGE,
+      status: statusFilter !== "all" ? statusFilter : undefined,
+      sortBy: sortField,
+      sortOrder,
+      search: searchQuery
+    }));
+  }, [dispatch, currentPage, statusFilter, sortField, sortOrder, searchQuery]);
 
   const getStatusColor = (status: string): string => {
     switch (status.toLowerCase()) {
@@ -109,17 +111,21 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userEmail }) =>
     }).format(amount);
   };
 
-  const filteredWithdrawals = withdrawals.filter(withdrawal =>
-    withdrawal.user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    withdrawal.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    withdrawal.amount.toString().includes(searchQuery)
-  );
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortOrder("desc");
+    }
+  };
 
   const MobileTransactionCard = ({ withdrawal }: { withdrawal: Withdrawal }) => (
     <div className="p-4 bg-zinc-900 rounded-lg border border-zinc-800 mb-3">
       <div className="flex justify-between items-start mb-3">
         <div className="flex flex-col">
           <span className="text-sm text-zinc-400">{formatDate(withdrawal.transactionDate)}</span>
+          <span className="text-sm text-zinc-300 mt-1">{withdrawal.user.email}</span>
           <div className="flex items-center gap-2 mt-1">
             <span className="capitalize font-medium text-emerald-100">
               Withdrawal
@@ -142,17 +148,6 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userEmail }) =>
     </div>
   );
 
-  if (!userEmail) {
-    return (
-      <Alert className="border-yellow-500/20 bg-yellow-500/10">
-        <AlertCircle className="h-4 w-4 text-yellow-500" />
-        <AlertDescription className="text-yellow-500">
-          Please provide a valid email address to view transactions.
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
   return (
     <Card className="border-zinc-800 bg-black/50 backdrop-blur-sm shadow-lg">
       <CardHeader className="pb-4 px-4 sm:px-6">
@@ -163,10 +158,10 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userEmail }) =>
             </div>
             <div>
               <CardTitle className="text-xl sm:text-2xl font-bold text-white">
-                Withdrawal History
+                All Withdrawals
               </CardTitle>
               <p className="mt-1 text-sm text-zinc-400">
-                Track your withdrawal activities
+                Manage and track all withdrawal requests
               </p>
             </div>
           </div>
@@ -174,12 +169,23 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userEmail }) =>
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-500" />
               <Input
-                placeholder="Search withdrawals..."
+                placeholder="Search by email or amount..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 w-full bg-zinc-900 border-zinc-800 focus:border-emerald-500 focus:ring-emerald-500 placeholder-zinc-500"
               />
             </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[180px] bg-zinc-900 border-zinc-800">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </CardHeader>
@@ -195,19 +201,19 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userEmail }) =>
               {error}
             </AlertDescription>
           </Alert>
-        ) : filteredWithdrawals.length === 0 ? (
+        ) : withdrawals.length === 0 ? (
           <div className="flex h-64 flex-col items-center justify-center text-zinc-400">
             <div className="p-4 rounded-full bg-zinc-800/50 mb-4">
               <Clock className="h-8 w-8" />
             </div>
             <p className="text-lg font-medium">No withdrawals found</p>
-            <p className="text-sm text-zinc-500 mt-1">Your withdrawal history will appear here</p>
+            <p className="text-sm text-zinc-500 mt-1">Try adjusting your filters</p>
           </div>
         ) : (
           <div className="space-y-3">
             {isMobileView ? (
               <div className="space-y-2">
-                {filteredWithdrawals.map((withdrawal) => (
+                {withdrawals.map((withdrawal) => (
                   <MobileTransactionCard key={withdrawal._id} withdrawal={withdrawal} />
                 ))}
               </div>
@@ -216,19 +222,44 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userEmail }) =>
                 <Table>
                   <TableHeader>
                     <TableRow className="border-zinc-800 hover:bg-zinc-800/50">
-                      <TableHead className="text-zinc-400 font-medium">Date</TableHead>
+                      <TableHead 
+                        className="text-zinc-400 font-medium cursor-pointer"
+                        onClick={() => handleSort("transactionDate")}
+                      >
+                        <div className="flex items-center gap-2">
+                          Date
+                          {sortField === "transactionDate" && (
+                            <ArrowDownUp className={`h-4 w-4 ${sortOrder === "asc" ? "rotate-180" : ""}`} />
+                          )}
+                        </div>
+                      </TableHead>
+                      <TableHead className="text-zinc-400 font-medium">User Email</TableHead>
                       <TableHead className="text-zinc-400 font-medium">Status</TableHead>
-                      <TableHead className="text-right text-zinc-400 font-medium">Amount</TableHead>
+                      <TableHead 
+                        className="text-right text-zinc-400 font-medium cursor-pointer"
+                        onClick={() => handleSort("amount")}
+                      >
+                        <div className="flex items-center justify-end gap-2">
+                          Amount
+                          {sortField === "amount" && (
+                            <ArrowDownUp className={`h-4 w-4 ${sortOrder === "asc" ? "rotate-180" : ""}`} />
+                          )}
+                        </div>
+                      </TableHead>
+                      <TableHead className="text-zinc-400 font-medium">Comment</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredWithdrawals.map((withdrawal) => (
+                    {withdrawals.map((withdrawal) => (
                       <TableRow
                         key={withdrawal._id}
                         className="border-zinc-800 hover:bg-zinc-800/50 transition-colors duration-200"
                       >
                         <TableCell className="text-zinc-400 font-medium">
                           {formatDate(withdrawal.transactionDate)}
+                        </TableCell>
+                        <TableCell className="text-zinc-300">
+                          {withdrawal.user.email}
                         </TableCell>
                         <TableCell>
                           <Badge
@@ -252,15 +283,15 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userEmail }) =>
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-1 py-2">
               <p className="text-xs sm:text-sm text-zinc-400 text-center sm:text-left">
-                Showing {Math.min((pagination.currentPage - 1) * ITEMS_PER_PAGE + 1, pagination.totalWithdrawals)} to{" "}
-                {Math.min(pagination.currentPage * ITEMS_PER_PAGE, pagination.totalWithdrawals)} of{" "}
+                Showing {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, pagination.totalWithdrawals)} to{" "}
+                {Math.min(currentPage * ITEMS_PER_PAGE, pagination.totalWithdrawals)} of{" "}
                 {pagination.totalWithdrawals} withdrawals
               </p>
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="icon"
-                  disabled={pagination.currentPage === 1}
+                  disabled={currentPage === 1}
                   onClick={() => setCurrentPage((prev) => prev - 1)}
                   className="h-8 w-8 sm:h-9 sm:w-9 border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:text-emerald-400 transition-colors duration-200"
                 >
@@ -269,7 +300,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userEmail }) =>
                 <Button
                   variant="outline"
                   size="icon"
-                  disabled={pagination.currentPage === pagination.totalPages}
+                  disabled={currentPage === pagination.totalPages}
                   onClick={() => setCurrentPage((prev) => prev + 1)}
                   className="h-8 w-8 sm:h-9 sm:w-9 border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:text-emerald-400 transition-colors duration-200"
                 >
@@ -284,4 +315,4 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userEmail }) =>
   );
 };
 
-export default TransactionHistory;
+export default AdminTransactionHistory;
