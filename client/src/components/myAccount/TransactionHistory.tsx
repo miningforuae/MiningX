@@ -84,7 +84,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userEmail }) =>
       case "pending":
         return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
       case "rejected":
-        return "bg-red-500/10 text-red-400 border-red-500/20";
+        return "bg-red-500/10 text-red border-red-500/20";
       default:
         return "bg-zinc-500/10 text-zinc-400 border-zinc-500/20";
     }
@@ -241,7 +241,6 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userEmail }) =>
                           -{formatAmount(withdrawal.amount)}
                         </TableCell>
                         <TableCell className="text-zinc-400">
-                          {withdrawal.adminComment || '-'}
                         </TableCell>
                       </TableRow>
                     ))}

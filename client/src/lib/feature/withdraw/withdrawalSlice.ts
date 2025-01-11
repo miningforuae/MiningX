@@ -73,7 +73,7 @@ import { WithdrawalState ,  Withdrawal,
   
   export const fetchUserWithdrawals = createAsyncThunk<
   WithdrawalListResponse,
-  { email: string; page?: number; limit?: number },  // Change userId to email
+  { email: string; page?: number; limit?: number },  
   { rejectValue: string }
 >(
   'withdrawal/fetchUserWithdrawals',

@@ -182,11 +182,11 @@ useEffect(() => {
                 placeholder="Search by email or amount..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 w-full bg-zinc-900 border-zinc-800 focus:border-emerald-500 focus:ring-emerald-500 placeholder-zinc-500"
+                className="pl-9 w-full bg-zinc-900 border-zinc-800 text-white focus:border-emerald-500 focus:ring-emerald-500 placeholder-zinc-500"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px] bg-zinc-900 border-zinc-800">
+              <SelectTrigger className="w-[180px] bg-zinc-900 border-green-800 text-white font-bold">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>

@@ -29,6 +29,7 @@ import {
 } from "@/lib/feature/userMachine/usermachineApi";
 import { AppDispatch } from "@/lib/store/store";
 import { fetchUserWithdrawals } from "@/lib/feature/withdraw/withdrawalSlice";
+import TransactionsTab from "@/components/AllProduct/TranscationTab";
 
 interface RootState {
   userMachine: {
@@ -48,7 +49,8 @@ const UserDetailsPage = () => {
   const { userId } = useParams();
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10; 
   const [activeTab, setActiveTab] = useState("overview");
   const {
     userMachines = [],
@@ -60,7 +62,9 @@ const UserDetailsPage = () => {
       totalPages: 1
     },    isLoading,
   } = useSelector((state: RootState) => state.userMachine);
-
+ 
+  
+  
   const { users } = useUsers();
   const currentUser = users?.find((user) => user._id === userId) || null;
   console.log("🚀 ~ UserDetailsPage ~ currentUser:", currentUser);
@@ -69,9 +73,38 @@ const UserDetailsPage = () => {
     if (userId) {
       dispatch(fetchUserMachines(userId));
       dispatch(fetchUserTotalProfit(userId));
-      dispatch(fetchUserWithdrawals({ userIdentifier: userId }));
+   
+    
     }
   }, [dispatch, userId]);
+ 
+
+  const {
+    withdrawals = [], // Add default empty array
+    pagination,
+    error,
+  } = useSelector((state: RootState) => state.withdrawal);
+
+  // Fetch withdrawals when page changes or when component mounts
+  useEffect(() => {
+    if (currentUser?.email) {
+      dispatch(fetchUserWithdrawals({
+        email: currentUser.email,
+        page: currentPage,
+        limit: ITEMS_PER_PAGE
+      }));
+    }
+  }, [currentUser?.email, dispatch, currentPage]); 
+
+  const handleRefresh = () => {
+    if (currentUser?.email) {
+      dispatch(fetchUserWithdrawals({
+        email: currentUser.email,
+        page: currentPage,
+        limit: ITEMS_PER_PAGE
+      }));
+    }
+  };
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString("en-US", {
@@ -199,13 +232,12 @@ const UserDetailsPage = () => {
                 trend="8"
                 color="green"
               />
-              <StatCard
-                icon={History}
-                title="Total Transactions"
-                value={transactionData?.totalTransactions || 0}
-                trend="15"
-                color="purple"
-              />
+            <StatCard
+  icon={History}
+  title="Total Transactions"
+  trend="15"
+  color="purple"
+/>
             </div>
           </TabsContent>
 
@@ -254,46 +286,15 @@ const UserDetailsPage = () => {
           </TabsContent>
 
           <TabsContent value="transactions">
-            <Card className="border-gray-800 bg-gray-900/50">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Activity className="h-5 w-5 text-blue-400" />
-                  <span className="text-white">Transaction History</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[400px] rounded-md">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="border-gray-800 bg-gray-950/50">
-                        <TableHead className="text-gray-400">Date</TableHead>
-                        <TableHead className="text-gray-400">Type</TableHead>
-                        <TableHead className="text-gray-400">Amount</TableHead>
-                        <TableHead className="text-gray-400">Details</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {transactionData.transactions?.map((transaction) => (
-                        <TableRow
-                          key={transaction._id}
-                          className="border-gray-800 text-gray-300 transition-colors hover:bg-gray-800/50"
-                        >
-                          <TableCell>{formatDate(transaction.transactionDate)}</TableCell>
-                          <TableCell>
-                            <StatusBadge status={transaction.type} />
-                          </TableCell>
-                          <TableCell className="font-medium text-green-400">
-                            {formatCurrency(transaction.amount)}
-                          </TableCell>
-                          <TableCell>{transaction.details}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </TabsContent>
+  <TransactionsTab
+    isLoading={isLoading}
+    withdrawals={withdrawals}
+    pagination={pagination}
+    currentPage={currentPage}
+    setCurrentPage={setCurrentPage}
+    handleRefresh={handleRefresh}
+  />
+</TabsContent>
         </Tabs>
       </div>
     </div>
