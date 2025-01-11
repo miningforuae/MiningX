@@ -5,9 +5,16 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  User, Cpu, DollarSign, History, Mail, 
-  Calendar, ArrowLeft, Activity, 
-  TrendingUp, Shield
+  User,
+  Cpu,
+  DollarSign,
+  History,
+  Mail,
+  Calendar,
+  ArrowLeft,
+  Activity,
+  TrendingUp,
+  Shield,
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +37,7 @@ import {
 import { AppDispatch } from "@/lib/store/store";
 import { fetchUserWithdrawals } from "@/lib/feature/withdraw/withdrawalSlice";
 import TransactionsTab from "@/components/AllProduct/TranscationTab";
+import LandingLayout from "@/components/Layouts/LandingLayout";
 
 interface RootState {
   userMachine: {
@@ -50,7 +58,7 @@ const UserDetailsPage = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 10; 
+  const ITEMS_PER_PAGE = 10;
   const [activeTab, setActiveTab] = useState("overview");
   const {
     userMachines = [],
@@ -59,12 +67,11 @@ const UserDetailsPage = () => {
       transactions: [],
       totalTransactions: 0,
       currentPage: 1,
-      totalPages: 1
-    },    isLoading,
+      totalPages: 1,
+    },
+    isLoading,
   } = useSelector((state: RootState) => state.userMachine);
- 
-  
-  
+
   const { users } = useUsers();
   const currentUser = users?.find((user) => user._id === userId) || null;
   console.log("🚀 ~ UserDetailsPage ~ currentUser:", currentUser);
@@ -73,11 +80,8 @@ const UserDetailsPage = () => {
     if (userId) {
       dispatch(fetchUserMachines(userId));
       dispatch(fetchUserTotalProfit(userId));
-   
-    
     }
   }, [dispatch, userId]);
- 
 
   const {
     withdrawals = [], // Add default empty array
@@ -88,21 +92,25 @@ const UserDetailsPage = () => {
   // Fetch withdrawals when page changes or when component mounts
   useEffect(() => {
     if (currentUser?.email) {
-      dispatch(fetchUserWithdrawals({
-        email: currentUser.email,
-        page: currentPage,
-        limit: ITEMS_PER_PAGE
-      }));
+      dispatch(
+        fetchUserWithdrawals({
+          email: currentUser.email,
+          page: currentPage,
+          limit: ITEMS_PER_PAGE,
+        }),
+      );
     }
-  }, [currentUser?.email, dispatch, currentPage]); 
+  }, [currentUser?.email, dispatch, currentPage]);
 
   const handleRefresh = () => {
     if (currentUser?.email) {
-      dispatch(fetchUserWithdrawals({
-        email: currentUser.email,
-        page: currentPage,
-        limit: ITEMS_PER_PAGE
-      }));
+      dispatch(
+        fetchUserWithdrawals({
+          email: currentUser.email,
+          page: currentPage,
+          limit: ITEMS_PER_PAGE,
+        }),
+      );
     }
   };
 
@@ -130,7 +138,7 @@ const UserDetailsPage = () => {
   }
 
   const StatCard = ({ icon: Icon, title, value, trend, color = "blue" }) => (
-    <Card className="border-gray-800 bg-gray-900/50 backdrop-blur-lg transition-all hover:scale-102 hover:bg-gray-800/70">
+    <Card className="hover:scale-102 border-gray-800 bg-gray-900/50 backdrop-blur-lg transition-all hover:bg-gray-800/70">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center justify-between text-gray-400">
           <span className="text-sm font-medium">{title}</span>
@@ -155,17 +163,21 @@ const UserDetailsPage = () => {
       active: "bg-green-500/10 text-green-400 border border-green-500/20",
       inactive: "bg-red-500/10 text-red-400 border border-red-500/20",
       withdrawal: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
-      deposit: "bg-green-500/10 text-green-400 border border-green-500/20"
+      deposit: "bg-green-500/10 text-green-400 border border-green-500/20",
     };
-    
+
     return (
-      <span className={`rounded-full px-3 py-1 text-xs font-medium ${styles[status]}`}>
+      <span
+        className={`rounded-full px-3 py-1 text-xs font-medium ${styles[status]}`}
+      >
         {status}
       </span>
     );
   };
 
   return (
+          <LandingLayout>
+    
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 p-6 text-gray-50">
       <div className="mx-auto max-w-7xl">
         <Button
@@ -195,7 +207,9 @@ const UserDetailsPage = () => {
                   </div>
                   <div className="flex items-center space-x-2 text-gray-400">
                     <Calendar className="h-4 w-4" />
-                    <span className="text-sm">Joined {formatDate(currentUser?.createdAt)}</span>
+                    <span className="text-sm">
+                      Joined {formatDate(currentUser?.createdAt)}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -233,10 +247,11 @@ const UserDetailsPage = () => {
                 color="green"
               />
             <StatCard
-  icon={History}
-  title="Total Transactions"
-  trend="15"
-  color="purple"
+            icon={History}
+              title="Total Transactions"
+            value={transactionData?.totalTransactions || 0}
+           trend="15"
+           color="purple"
 />
             </div>
           </TabsContent>
@@ -267,14 +282,16 @@ const UserDetailsPage = () => {
                           className="border-gray-800 text-gray-300 transition-colors hover:bg-gray-800/50"
                         >
                           <TableCell className="font-medium">
-                            {machine.machine.machineName}
+                            {machine?.machine?.machineName}
                           </TableCell>
-                          <TableCell>{formatDate(machine.assignedDate)}</TableCell>
                           <TableCell>
-                            <StatusBadge status={machine.status} />
+                            {formatDate(machine?.assignedDate)}
+                          </TableCell>
+                          <TableCell>
+                            <StatusBadge status={machine?.status} />
                           </TableCell>
                           <TableCell className="font-medium text-green-400">
-                            {formatCurrency(machine.monthlyProfitAccumulated)}
+                            {formatCurrency(machine?.monthlyProfitAccumulated)}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -286,18 +303,21 @@ const UserDetailsPage = () => {
           </TabsContent>
 
           <TabsContent value="transactions">
-  <TransactionsTab
-    isLoading={isLoading}
-    withdrawals={withdrawals}
-    pagination={pagination}
-    currentPage={currentPage}
-    setCurrentPage={setCurrentPage}
-    handleRefresh={handleRefresh}
-  />
-</TabsContent>
+            <TransactionsTab
+              isLoading={isLoading}
+              withdrawals={withdrawals}
+              pagination={pagination}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              handleRefresh={handleRefresh}
+            />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
+
+    </LandingLayout>
+
   );
 };
 

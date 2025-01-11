@@ -70,7 +70,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userEmail }) =>
   useEffect(() => {
     if (userEmail) {
       dispatch(fetchUserWithdrawals({
-        email: userEmail,  // Pass email instead of userId
+        email: userEmail, 
         page: currentPage,
         limit: ITEMS_PER_PAGE
       }));

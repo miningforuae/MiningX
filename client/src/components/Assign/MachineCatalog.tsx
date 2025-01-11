@@ -223,7 +223,7 @@ const UserMachineList: React.FC = () => {
                 </td>
                 <td className="p-4">
                   <span className="font-medium text-[#21eb00]">
-                    ${assignment.monthlyProfitAccumulated || "0.00"}
+                    ${assignment.monthlyProfitAccumulated.toFixed(0)|| "0.00"}
                   </span>
                 </td>
                 <td className="p-4">

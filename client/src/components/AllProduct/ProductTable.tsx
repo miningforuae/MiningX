@@ -8,6 +8,8 @@ import { useGetAllMiningMachinesQuery, useDeleteMiningMachineMutation } from "@/
 import { Pencil, Trash2, Eye, Search, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { toast } from 'react-toastify';
 import Link from 'next/link';
+import DeleteModal from './DeleteModal';  // Import the new DeleteModal component
+
 
 interface MiningMachine {
   _id: string;
@@ -62,6 +64,30 @@ const AdminProductTable = () => {
   const handleDeleteClick = (id: string) => {
     setMachineToDelete(id);
     setDeleteModalOpen(true);
+  };
+
+  // Handle delete confirmation
+  const handleConfirmDelete = async () => {
+    if (!machineToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      await deleteMiningMachine(machineToDelete).unwrap();
+      toast.success('Mining machine deleted successfully');
+      setDeleteModalOpen(false);
+      setMachineToDelete(null);
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast.error('Failed to delete mining machine');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Handle modal close
+  const handleCloseModal = () => {
+    setDeleteModalOpen(false);
+    setMachineToDelete(null);
   };
 
  
@@ -230,7 +256,14 @@ const AdminProductTable = () => {
           </div>
         )}
 
-     
+<DeleteModal
+        isOpen={deleteModalOpen}
+        onClose={handleCloseModal}
+        onConfirm={handleConfirmDelete}
+        title="Delete Mining Machine"
+        description="Are you sure you want to delete this mining machine? This action cannot be undone."
+        isLoading={isDeleting}
+      />
       </div>
     </div>
   );
