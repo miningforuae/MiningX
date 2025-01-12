@@ -11,7 +11,7 @@ const CreativeHeroSlider = () => {
       title: 'ASIC MINERS',
       subtitle: 'HOSTING SERVICES',
       description: '97% Uptime guaranteed ASIC Mining with cheapest electricity cost of just 0.065 $ / KW for b2b.',
-      image: '/header2.png', // Replace with your mining rig image
+      image: '/AvalonMine1246 (1).png', // Replace with your mining rig image
       stats: [
         { label: 'Uptime', value: '97%' },
         { label: 'Power Cost', value: '0.065$/KW' },
@@ -22,7 +22,7 @@ const CreativeHeroSlider = () => {
       title: 'MINING SOLUTIONS',
       subtitle: 'CLOUD MINING',
       description: 'Professional mining solutions with advanced monitoring and optimal performance.',
-      image: '/header1.png', // Replace with your second image
+      image: '/BitmainAnt.jpeg', // Replace with your second image
       stats: [
         { label: 'Security', value: '99.9%' },
         { label: 'Efficiency', value: '95%' },
@@ -33,7 +33,7 @@ const CreativeHeroSlider = () => {
       title: 'DATA CENTERS',
       subtitle: 'PREMIUM HOSTING',
       description: 'State-of-the-art facilities with advanced cooling systems and optimal mining conditions.',
-      image: '/header2.png', // Replace with your third image
+      image: '/AvalonMine1246 (2).png', // Replace with your third image
       stats: [
         { label: 'Cooling', value: 'Advanced' },
         { label: 'Location', value: 'Strategic' },
@@ -151,7 +151,7 @@ const CreativeHeroSlider = () => {
                 ${index === currentSlide ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}
             >
               {/* Image Container with Clip Path */}
-              <div className="relative h-full clip-path-slant bg-[#151515]">
+              <div className="relative h-full  ">
                 <img
                   src={slide.image}
                   alt={slide.title}
