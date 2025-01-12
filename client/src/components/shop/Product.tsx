@@ -1,50 +1,52 @@
+// @ts-nocheck
+
 "use client";
 import React, { useState } from "react";
-import { Shuffle, Search, Heart, ChevronDown } from "lucide-react";
+import { Heart } from "lucide-react";
 import { useGetAllMiningMachinesQuery } from "@/lib/feature/Machines/miningMachinesApiSlice";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store/store";
 import { useRouter } from "next/navigation";
+
 interface Machine {
   _id: string;
   machineName: string;
-  priceRange: number;
-  hashrate: number;
+  priceRange: {
+    min: number;
+    max: number;
+  };
   images?: string[];
 }
 
-// Update the component props type
 interface ShopProps {
   isHomePage?: boolean;
   initialProductCount?: number;
   whatsappNumber?: string;
 }
 
-// Product card props type
 interface ProductCardProps {
   product: Machine;
 }
 
-// TopProductCard props type
 interface TopProductCardProps {
   product: Machine;
 }
 
-
 const Shop: React.FC<ShopProps> = ({
   isHomePage = false,
   initialProductCount = 6,
-  whatsappNumber = "+1234567890", // Add your WhatsApp number here
+  whatsappNumber = "+1234567890",
 }) => {
   const [sortOption, setSortOption] = useState("featured");
   const { data: productsResponse, isLoading, isError } = useGetAllMiningMachinesQuery();
   const router = useRouter();
 
   const { user, isAuthenticated } = useSelector(
-    (state: RootState) => state.auth,
+    (state: RootState) => state.auth
   );
+
   interface ProductsResponse {
     data: Machine[];
   }
@@ -52,12 +54,16 @@ const Shop: React.FC<ShopProps> = ({
   const products = productsResponse as unknown as ProductsResponse;
   const topProducts = products?.data?.slice(0, 3) || [];
 
-  const handleWhatsAppClick = (product:Machine) => {
+  const formatPriceRange = (range: { min: number; max: number }) => {
+    return `$${range.min.toLocaleString()} - $${range.max.toLocaleString()}`;
+  };
+
+  const handleWhatsAppClick = (product: Machine) => {
     if (!isAuthenticated) {
       router.push("/auth/signin");
       return;
     }
-    const message = `Hi, I'm interested in buying the ${product.machineName}.\n\nDetails:\n- Hashrate: ${product.hashrate} TH/s\n- Price: $${product.priceRange}\n\nPlease provide more information.`;
+    const message = `Hi, I'm interested in buying the ${product.machineName}.\n\nDetails:\n- Price Range: ${(product.priceRange)}\n\nPlease provide more information.`;
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
     window.open(whatsappUrl, "_blank");
@@ -78,8 +84,9 @@ const Shop: React.FC<ShopProps> = ({
             <h3 className="mb-1 text-sm font-medium text-white">
               {product.machineName}
             </h3>
-            <p className="font-bold text-green-500">${product.priceRange}</p>
-            <p className="text-sm text-gray-400">{product.hashrate} TH/s</p>
+            <p className="font-bold text-green-500">
+              {product.priceRange}
+            </p>
           </div>
         </div>
         <span className="h-[1px] w-full bg-gray-200"></span>
@@ -89,6 +96,7 @@ const Shop: React.FC<ShopProps> = ({
 
   const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     const [isHovered, setIsHovered] = useState(false);
+
     return (
       <div
         className="relative overflow-hidden rounded-lg bg-white"
@@ -109,7 +117,7 @@ const Shop: React.FC<ShopProps> = ({
             className="relative aspect-square cursor-pointer p-4"
             onClick={() =>
               router.push(
-                `/shop/${product.machineName.toLowerCase().replace(/\s+/g, "-")}`,
+                `/shop/${product.machineName.toLowerCase().replace(/\s+/g, "-")}`
               )
             }
           >
@@ -134,20 +142,16 @@ const Shop: React.FC<ShopProps> = ({
           className="cursor-pointer bg-primary p-4 pb-20"
           onClick={() =>
             router.push(
-              `/shop/${product.machineName.toLowerCase().replace(/\s+/g, "-")}`,
+              `/shop/${product.machineName.toLowerCase().replace(/\s+/g, "-")}`
             )
           }
         >
           <h3 className="mb-2 text-center text-lg font-medium text-white">
             {product.machineName}
           </h3>
-          <div className="mb-2 flex items-center justify-center gap-2">
-            <span className="text-sm text-gray-300">
-              {product.hashrate} TH/s
-            </span>
-          </div>
+       
           <p className="text-center text-xl font-bold text-secondary">
-            ${product.priceRange}
+            {product.priceRange}
           </p>
         </div>
       </div>
@@ -176,11 +180,9 @@ const Shop: React.FC<ShopProps> = ({
   const sortedProducts = [...(products?.data || [])].sort((a, b) => {
     switch (sortOption) {
       case "price-low":
-        return Number(a.priceRange) - Number(b.priceRange);
+        return a.priceRange.min - b.priceRange.min;
       case "price-high":
-        return Number(b.priceRange) - Number(a.priceRange);
-      case "hashrate":
-        return Number(b.hashrate) - Number(a.hashrate);
+        return b.priceRange.max - a.priceRange.max;
       default:
         return 0;
     }
@@ -206,8 +208,6 @@ const Shop: React.FC<ShopProps> = ({
           )}
 
           <div className="flex-1">
-            
-
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
               {displayProducts.map((product, index) => (
                 <ProductCard key={product._id || index} product={product} />

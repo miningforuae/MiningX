@@ -1,9 +1,6 @@
-
-
 // @ts-nocheck
 
-"use client"
-
+'use client'
 import React, { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useGetAllMiningMachinesQuery } from "@/lib/feature/Machines/miningMachinesApiSlice";
@@ -14,7 +11,10 @@ import {
   Bolt, 
   Zap, 
   CreditCard, 
-  CheckCircle2
+  CheckCircle2,
+  DollarSign,
+  Minus,
+  Plus
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'react-toastify';
@@ -29,12 +29,18 @@ interface ProductDetailsProps {
 
 const ProductDetails: React.FC<ProductDetailsProps> = ({ params, searchParams }) => {
   const [quantity, setQuantity] = useState(1);
-  const whatsappNumber = "+1234567890"; // Move this inside the component or to environment variables
+  const whatsappNumber = "+1234567890";
   const { data: products, isLoading, isError } = useGetAllMiningMachinesQuery();
 
   const product = products?.data?.find(
     (p) => p.machineName.toLowerCase().replace(/\s+/g, '-') === params.id
   );
+
+  const handleQuantityChange = (newQuantity: number) => {
+    if (newQuantity >= 1) {
+      setQuantity(newQuantity);
+    }
+  };
 
   const handleWhatsAppClick = () => {
     if (!product) return;
@@ -79,8 +85,8 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ params, searchParams })
 
           <div className="grid md:grid-cols-2 gap-12">
             {/* Product Image */}
-            <div className="bg-white/10 rounded-2xl flex items-center justify-center relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-blue-500/20 blur-2xl -z-10 group-hover:from-green-500/30 group-hover:to-blue-500/30 transition-all duration-300"></div>
+            <div className=" bg-white rounded-2xl flex items-center justify-center relative overflow-hidden group p-8">
+              <div className="absolute inset-0 bg-white blur-2xl -z-10 group-hover:from-green-500/30 group-hover:to-blue-500/30 transition-all duration-300"></div>
               <img 
                 src={product.images?.[0] || '/placeholder.jpg'} 
                 alt={product.machineName} 
@@ -94,13 +100,26 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ params, searchParams })
                 {product.machineName}
               </h1>
 
+              {/* Price and Quantity Section */}
+              <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700/50">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-gray-400 text-sm">Price Range</p>
+                    <p className="text-3xl font-bold text-green-500">{product.priceRange.toLocaleString()}</p>
+                  </div>
+                
+                </div>
+                <div className="text-right text-gray-400">
+                </div>
+              </div>
+
               {/* Action Button */}
               <button 
                 onClick={handleWhatsAppClick}
                 className="w-full bg-green-500 hover:bg-green-600 text-white px-6 py-4 rounded-xl transition-all duration-300 transform hover:scale-[1.02] flex items-center justify-center gap-3 shadow-lg shadow-green-500/20"
               >
                 <ShoppingCart className="h-5 w-5" />
-                <span className="font-semibold">Buy Now via WhatsApp</span>
+                <span className="font-semibold">Buy Now </span>
               </button>
 
               {/* Technical Specifications */}
@@ -109,28 +128,28 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ params, searchParams })
                   <Zap className="mr-2 text-yellow-500" /> Technical Specifications
                 </h2>
                 <div className="grid grid-cols-2 gap-6">
-                  <div className="flex items-center gap-3 bg-gray-700/30 p-4 rounded-lg">
+                  <div className="flex items-center gap-3 bg-gray-700/30 p-4 rounded-lg hover:bg-gray-700/40 transition-colors">
                     <Bolt className="text-blue-500 h-8 w-8" />
                     <div>
                       <p className="text-gray-400 text-sm">Hashrate</p>
                       <p className="font-medium text-lg">{product.hashrate} TH/s</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 bg-gray-700/30 p-4 rounded-lg">
+                  <div className="flex items-center gap-3 bg-gray-700/30 p-4 rounded-lg hover:bg-gray-700/40 transition-colors">
                     <Zap className="text-yellow-500 h-8 w-8" />
                     <div>
                       <p className="text-gray-400 text-sm">Power Consumption</p>
                       <p className="font-medium text-lg">{product.powerConsumption} W</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 bg-gray-700/30 p-4 rounded-lg">
-                    <CheckCircle2 className="text-green-500 h-8 w-8" />
+                  <div className="flex items-center gap-3 bg-gray-700/30 p-4 rounded-lg hover:bg-gray-700/40 transition-colors">
+                    <DollarSign className="text-green-500 h-8 w-8" />
                     <div>
                       <p className="text-gray-400 text-sm">Monthly Profit</p>
-                      <p className="font-medium text-lg text-green-500">${product.monthlyProfit}</p>
+                      <p className="font-medium text-lg text-green-500">{product.monthlyProfit}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 bg-gray-700/30 p-4 rounded-lg">
+                  <div className="flex items-center gap-3 bg-gray-700/30 p-4 rounded-lg hover:bg-gray-700/40 transition-colors">
                     <Heart className="text-red-500 h-8 w-8" />
                     <div>
                       <p className="text-gray-400 text-sm">Coins Mined</p>

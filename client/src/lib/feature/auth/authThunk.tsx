@@ -34,7 +34,7 @@ export const authApiSlice = baseApiSlice.injectEndpoints({
 
     getCurrentUser: builder.query<User, void>({
       query: () => ({
-        url: 'api/v1/profile',
+        url: 'api/v1/me',
         method: 'GET',
         credentials: 'include',
 
