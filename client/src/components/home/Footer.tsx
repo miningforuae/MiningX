@@ -1,14 +1,38 @@
-import Image from "next/image";
-import Link from "next/link";
+
+// @ts-nocheck
+
+import React from 'react';
 import {
-  Facebook,
-  Twitter,
-  Instagram,
-  Linkedin,
-  Mail,
-  MapPin,
-  Phone,
-} from "lucide-react";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import Link from "next/link";
+import { Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
+import legalContent from './legalContent';
+
+const LegalModal = ({ title, content }) => {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button className="block text-gray-300 transition-all duration-300 hover:pl-2 hover:text-green-500">
+          {title}
+        </button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold text-white">{title}</DialogTitle>
+        </DialogHeader>
+        <ScrollArea className="h-[60vh] pr-4">
+          {content}
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 const Footer = () => {
   const socialLinks = [
@@ -18,6 +42,8 @@ const Footer = () => {
     { icon: Linkedin, href: "#" },
   ];
 
+  
+
   const footerLinks = [
     {
       title: "Company",
@@ -25,17 +51,15 @@ const Footer = () => {
         { label: "Home", href: "/" },
         { label: "About Us", href: "/about" },
         { label: "Shop", href: "/shop" },
-        { label: "Contact", href: "/contact" },
+        { label: "Contact", href: "/contactUs" },
       ],
     },
     {
       title: "Legal",
-      links: [
-        { label: "Privacy Policy", href: "/privacy" },
-        { label: "Terms of Service", href: "/terms" },
-        { label: "Accessibility", href: "/accessibility" },
-        { label: "Cookie Policy", href: "/cookies" },
-      ],
+      links: Object.keys(legalContent).map((label) => ({
+        label,
+        isModal: true,
+      })),
     },
   ];
 
@@ -82,12 +106,19 @@ const Footer = () => {
                 <ul className="space-y-2">
                   {section.links.map((link, linkIndex) => (
                     <li key={linkIndex}>
-                      <Link
-                        href={link.href}
-                        className="block text-gray-300 transition-all duration-300 hover:pl-2 hover:text-green-500"
-                      >
-                        {link.label}
-                      </Link>
+                      {link.isModal ? (
+                        <LegalModal
+                          title={link.label}
+                          content={legalContent[link.label]}
+                        />
+                      ) : (
+                        <Link
+                          href={link.href}
+                          className="block text-gray-300 transition-all duration-300 hover:pl-2 hover:text-green-500"
+                        >
+                          {link.label}
+                        </Link>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -100,25 +131,11 @@ const Footer = () => {
         <div className="mt-8 border-t border-gray-800 pt-6">
           <div className="flex flex-col items-center justify-between md:flex-row">
             <p className="mb-4 text-sm text-gray-400 md:mb-0">
-              © {new Date().getFullYear()} MineX Technologies. All Rights
+              © {new Date().getFullYear()} MinerX Technologies. All Rights
               Reserved.
             </p>
 
-            <div className="flex space-x-4 text-sm">
-              <Link
-                href="/privacy"
-                className="text-gray-400 transition-colors hover:text-green-500"
-              >
-                Privacy Policy
-              </Link>
-              <span className="text-gray-600">|</span>
-              <Link
-                href="/terms"
-                className="text-gray-400 transition-colors hover:text-green-500"
-              >
-                Terms of Service
-              </Link>
-            </div>
+          
           </div>
         </div>
 
