@@ -25,8 +25,8 @@ export const authApiSlice = baseApiSlice.injectEndpoints({
 
     logout: builder.mutation<{ message: string }, void>({
       query: () => ({
-        url: 'api/v1/logoutUser',
-        method: 'GET',
+        url: 'api/v1/logout',  // Updated to match backend route
+        method: 'POST',        // Updated to match backend method
         credentials: 'include', 
       }),
       invalidatesTags: ['User'],
@@ -37,16 +37,16 @@ export const authApiSlice = baseApiSlice.injectEndpoints({
         url: 'api/v1/me',
         method: 'GET',
         credentials: 'include',
-
       }),
       providesTags: ['User'],
     }),
-     /////
+
     updateProfile: builder.mutation<User, Partial<User>>({
       query: (updates) => ({
-        url: 'api/v1/updateProfile',
-        method: 'PATCH',
+        url: 'api/v1/profile/update',  // Updated to match backend route
+        method: 'PUT',                 // Updated to match backend method
         body: updates,
+        credentials: 'include',        // Added for consistency
       }),
       invalidatesTags: ['User'],
     }),
@@ -56,6 +56,7 @@ export const authApiSlice = baseApiSlice.injectEndpoints({
         url: 'api/v1/verify-password',
         method: 'POST',
         body: data,
+        credentials: 'include',        // Added for consistency
       }),
     }),
   }),

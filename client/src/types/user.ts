@@ -5,6 +5,7 @@ export interface User {
   email: string;
   country: string;
   role: 'user' | 'admin';
+  phoneNumber:string;
 }
 
 export interface LoginCredentials {
