@@ -82,7 +82,7 @@ const ImprovedHowItWorksSection = () => {
             <div className="mt-4 h-1 w-24 bg-green-500" />
           </div>
 
-          <button className="group relative overflow-hidden rounded-full bg-green-500 px-8 py-4 text-lg font-medium text-white transition-all hover:bg-green-600">
+          <button className="group relative overflow-hidden rounded-full bg-green-500 md:px-8 md:py-4 px-4 py-3 text-lg font-medium text-white transition-all hover:bg-green-600">
             <span className="relative z-10 flex items-center space-x-2">
               <span>Talk to an expert</span>
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />

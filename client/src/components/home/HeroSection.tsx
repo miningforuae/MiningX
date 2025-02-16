@@ -182,7 +182,7 @@ const MiningHeroSlider = () => {
           </div>
 
           {/* Right Column - Image Section */}
-          <div className="relative overflow-hidden rounded-2xl max-h-96 mt-48">
+          <div className="relative overflow-hidden rounded-2xl max-h-96 md:mt-48">
             <div className="absolute inset-0 z-10 bg-gradient-to-r from-green-500/20 to-transparent" />
             <div className="absolute inset-0 z-20 bg-[#101010]/20" />
             

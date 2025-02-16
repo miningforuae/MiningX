@@ -1,13 +1,16 @@
 // @ts-nocheck
-
 "use client";
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Link from "next/link";
 import { Eye, EyeOff, Phone } from "lucide-react";
 import { useRegisterMutation } from "@/lib/feature/auth/authThunk";
+import Select from 'react-select';
+import { getCountries, getCountryCallingCode } from 'libphonenumber-js';
+import { AsYouType, parsePhoneNumber } from 'libphonenumber-js';
 
 interface RegisterError {
   status?: number;
@@ -23,16 +26,95 @@ export default function RegisterPage() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [country, setCountry] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<any>(null);
+  const [loadingLocation, setLoadingLocation] = useState(true);
 
   const [register, { isLoading }] = useRegisterMutation();
   const router = useRouter();
 
-  const validatePhoneNumber = (phone: string) => {
-    const phoneRegex = /^\+?[1-9]\d{1,14}$/;
-    return phoneRegex.test(phone);
+  // Format countries for react-select
+  const countryOptions = getCountries().map(country => ({
+    value: country,
+    label: `${new Intl.DisplayNames(['en'], { type: 'region' }).of(country)} (+${getCountryCallingCode(country)})`,
+    dialCode: getCountryCallingCode(country)
+  }));
+
+  // Custom styles for react-select to match the dark theme
+  const customStyles = {
+    control: (base: any, state: any) => ({
+      ...base,
+      background: 'rgba(55, 65, 81, 0.5)',
+      borderColor: state.isFocused ? '#22c55e' : '#4B5563',
+      boxShadow: state.isFocused ? '0 0 0 2px rgba(34, 197, 94, 0.2)' : 'none',
+      borderRadius: '0.5rem',
+      padding: '0.25rem',
+      '&:hover': {
+        borderColor: '#22c55e'
+      }
+    }),
+    menu: (base: any) => ({
+      ...base,
+      background: '#1F2937',
+      border: '1px solid #4B5563'
+    }),
+    option: (base: any, { isFocused, isSelected }: any) => ({
+      ...base,
+      backgroundColor: isSelected ? '#22c55e' : isFocused ? '#374151' : '#1F2937',
+      color: 'white',
+      '&:hover': {
+        backgroundColor: '#374151'
+      }
+    }),
+    singleValue: (base: any) => ({
+      ...base,
+      color: 'white'
+    }),
+    input: (base: any) => ({
+      ...base,
+      color: 'white'
+    })
+  };
+
+  useEffect(() => {
+    const detectCountry = async () => {
+      try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        const countryOption = countryOptions.find(option => option.value === data.country_code);
+        if (countryOption) {
+          setSelectedCountry(countryOption);
+        }
+      } catch (error) {
+        console.error('Error detecting country:', error);
+      } finally {
+        setLoadingLocation(false);
+      }
+    };
+
+    detectCountry();
+  }, []);
+
+  const validatePhoneNumber = (phone: string, country: string) => {
+    if (!country) return false;
+    try {
+      const phoneNumber = parsePhoneNumber(phone, country);
+      return phoneNumber && phoneNumber.isValid();
+    } catch {
+      return false;
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    if (selectedCountry) {
+      const asYouType = new AsYouType(selectedCountry.value);
+      const formattedNumber = asYouType.input(value);
+      setPhoneNumber(formattedNumber);
+    } else {
+      setPhoneNumber(value);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -48,10 +130,17 @@ export default function RegisterPage() {
       return;
     }
 
-    if (!validatePhoneNumber(phoneNumber)) {
+    if (!selectedCountry) {
+      toast.error("Please select a country!");
+      return;
+    }
+
+    if (!validatePhoneNumber(phoneNumber, selectedCountry.value)) {
       toast.error("Please enter a valid phone number!");
       return;
     }
+
+    const formattedPhone = `+${selectedCountry.dialCode}${phoneNumber.replace(/\D/g, '')}`;
 
     try {
       await register({ 
@@ -59,8 +148,8 @@ export default function RegisterPage() {
         lastName, 
         email, 
         password, 
-        country,
-        phoneNumber 
+        country: selectedCountry.value,
+        phoneNumber: formattedPhone
       }).unwrap();
       toast.success("Registration successful!");
       router.push("/");
@@ -146,11 +235,14 @@ export default function RegisterPage() {
                   Country
                   <span className="text-red-500 ml-1">*</span>
                 </label>
-                <input
-                  type="text"
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                  className="w-full rounded-lg border border-gray-600 bg-gray-700/50 p-3 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 focus:outline-none transition-all"
+                <Select
+                  options={countryOptions}
+                  value={selectedCountry}
+                  onChange={setSelectedCountry}
+                  isLoading={loadingLocation}
+                  styles={customStyles}
+                  placeholder="Select a country"
+                  className="text-sm"
                   required
                 />
               </div>
@@ -159,14 +251,15 @@ export default function RegisterPage() {
                   Phone Number
                   <span className="text-red-500 ml-1">*</span>
                 </label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <div className="relative flex">
+                  <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-600 bg-gray-700/50 text-gray-300">
+                    {selectedCountry ? `+${selectedCountry.dialCode}` : '+'}
+                  </span>
                   <input
                     type="tel"
                     value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    placeholder="+1234567890"
-                    className="w-full rounded-lg border border-gray-600 bg-gray-700/50 p-3 pl-10 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 focus:outline-none transition-all"
+                    onChange={handlePhoneChange}
+                    className="w-full rounded-r-lg border border-gray-600 bg-gray-700/50 p-3 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 focus:outline-none transition-all"
                     required
                   />
                 </div>
