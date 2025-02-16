@@ -78,3 +78,51 @@ export interface Withdrawal {
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
   }
+
+
+
+  export interface BalanceUpdateRequest {
+    userId: string;
+    amount: number;
+    reason?: string;
+  }
+  
+  export interface BalanceUpdateResponse {
+    message: string;
+    user: {
+      id: string;
+      email: string;
+      name: string;
+    };
+    balanceUpdate: {
+      amount: number;
+      previousBalance: number;
+      newBalance: number;
+    };
+    transaction: {
+      _id: string;
+      amount: number;
+      type: string;
+      status: string;
+      details: string;
+      processedAt: string;
+    };
+  }
+  
+  export interface UserBalanceResponse {
+    userId: string;
+    userName: string;
+    email: string;
+    mainBalance: number;
+    machineProfitsTotal: number;
+    totalBalance: number;
+    machineCount: number;
+  }
+  
+  export interface BalanceHistoryParams {
+    userId?: string;
+    startDate?: string;
+    endDate?: string;
+    page?: number;
+    limit?: number;
+  }

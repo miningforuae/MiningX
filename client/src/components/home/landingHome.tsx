@@ -7,7 +7,7 @@ import Shop from "../shop/Product";
 
 function LandingHome() {
   return (
-    <div className="overflow-hidden bg-[#101010]">
+    <div className=" bg-[#101010]">
       <HeroSection />
       <SolutionCard/>
       <ModernAboutSegments/>

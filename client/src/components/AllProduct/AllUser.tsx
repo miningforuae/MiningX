@@ -7,6 +7,9 @@ import {
   MapPin,
   Mail,
   Calendar,
+  MoreVertical,
+  User,
+  DollarSign,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,7 +38,20 @@ import { toast } from "sonner";
 import { useUsers } from "@/hooks/Userdetail";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store/store";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import UserBalanceUpdate from "../AllUser/updateBalance";
 interface User {
   _id?: string;
   id?: string;
@@ -63,6 +79,9 @@ interface AuthState {
 export default function AllUsersPage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isBalanceModalOpen, setIsBalanceModalOpen] = useState(false);
+
   const { users, deleteUser, isLoading, error } = useUsers() as UseUsersReturn;
   const { user, isAuthenticated } = useSelector(
     (state: RootState) => state.auth as AuthState,
@@ -110,7 +129,7 @@ export default function AllUsersPage() {
   };
 
   const handleRowClick = (userId: string) => {
-    router.push(`/AllUser/${userId}`);
+    
   };
 
   return (
@@ -139,7 +158,16 @@ export default function AllUsersPage() {
               className="border-gray-600 bg-gray-700 pl-10 text-gray-100 focus:ring-2 focus:ring-blue-500"
             />
           </div>
-
+          <Dialog open={isBalanceModalOpen} onOpenChange={setIsBalanceModalOpen}>
+        <DialogContent className="bg-gray-800 border-gray-700 text-white sm:max-w-[600px]">
+          {selectedUser && (
+            <UserBalanceUpdate 
+              userId={selectedUser._id || selectedUser.id || ""} 
+              userName={`${selectedUser.firstName} ${selectedUser.lastName}`}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
@@ -227,47 +255,78 @@ export default function AllUsersPage() {
                           {formatDate(user.createdAt)}
                         </div>
                       </TableCell>
-                      <TableCell
-                        className="text-right"
-                        onClick={(e) => e.stopPropagation()}
+                      <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="h-8 w-8 p-0 text-gray-400 hover:text-white"
                       >
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              className="bg-red-500/20 text-red-400 hover:bg-red-500/30"
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent 
+                      className="w-48 bg-gray-800 border-gray-700 text-gray-100"
+                      align="end"
+                    >
+                      <DropdownMenuItem
+                        className="flex items-center hover:bg-gray-700 cursor-pointer"
+                        onClick={() => handleRowClick(user._id || user.id || "")}
+                      >
+                        <User className="mr-2 h-4 w-4" />
+                        User Profile
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuItem
+                        className="flex items-center hover:bg-gray-700 cursor-pointer"
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setIsBalanceModalOpen(true);
+                        }}
+                      >
+                        <DollarSign className="mr-2 h-4 w-4" />
+                        Update Balance
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuSeparator className="bg-gray-700" />
+                      
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <DropdownMenuItem
+                            className="flex items-center text-red-400 hover:bg-red-500/20 hover:text-red-400 cursor-pointer"
+                            onSelect={(e) => e.preventDefault()}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete User
+                          </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="border-gray-700 bg-gray-800">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="text-gray-100">
+                              Delete User Account
+                            </AlertDialogTitle>
+                            <AlertDialogDescription className="text-gray-400">
+                              Are you sure you want to delete {user.firstName}{" "}
+                              {user.lastName} account? This action cannot be
+                              undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel className="bg-gray-700 text-gray-300 hover:bg-gray-600">
+                              Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteUser(user._id || user.id || "")}
+                              className="bg-red-500 hover:bg-red-600 text-white"
                             >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent className="border-gray-700 bg-gray-800">
-                            <AlertDialogHeader>
-                              <AlertDialogTitle className="text-gray-100">
-                                Delete User Account
-                              </AlertDialogTitle>
-                              <AlertDialogDescription className="text-gray-400">
-                                Are you sure you want to delete {user.firstName}{" "}
-                                {user.lastName} account? This action cannot be
-                                undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel className="bg-gray-700 text-gray-300 hover:bg-gray-600">
-                                Cancel
-                              </AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() =>
-                                  handleDeleteUser(user._id || user.id || "")
-                                }
-                                className="bg-red-500 hover:bg-red-600 text-white"
-                              >
-                                Delete User
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </TableCell>
+                              Delete User
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
                     </TableRow>
                   ))
                 )}

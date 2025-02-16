@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, ReactNode } from "react";
-import Header from "@/components/Header";
 import Navbar from "../NavBar";
 import Footer from "@/components/home/Footer";
 import { AdminNavbar } from "../AdminNavbar";

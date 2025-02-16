@@ -1,12 +1,13 @@
 "use client";
 import React, { useEffect } from "react";
-import { FileText, Heart, DollarSign, BarChart3 } from "lucide-react";
+import { FileText, Heart, DollarSign, BarChart3, Wallet, Coins } from "lucide-react";
 import { ChevronRight } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "@/lib/store/store";
 import { useRouter } from "next/navigation";
 import { fetchUserMachines } from "@/lib/feature/userMachine/usermachineApi";
 import { fetchUserWithdrawals } from "@/lib/feature/withdraw/withdrawalSlice";
+import { getUserBalance } from '@/lib/feature/userMachine/balanceSlice';
 
 const DashboardHero = () => {
   const router = useRouter();
@@ -21,14 +22,20 @@ const DashboardHero = () => {
   const { user, isAuthenticated } = useSelector(
     (state: RootState) => state.auth
   );
+  const balance = useSelector((state: RootState) => state.balance.userBalance);
+  
+  // Update these formatted values to use the correct path
+  const formattedTotalBalance = balance?.balances?.total?.toLocaleString() || '0';
+  const formattedMiningBalance = balance?.balances?.mining?.toLocaleString() || '0';
 
   useEffect(() => {
     const fetchData = async () => {
-      if (user?.email && isAuthenticated) {
+      if (user?.id && isAuthenticated) {  // Changed from email to id based on earlier code
         try {
           await Promise.all([
-            dispatch(fetchUserMachines(user.email)).unwrap(),
-            dispatch(fetchUserWithdrawals({ email: user.email })).unwrap()
+            dispatch(fetchUserMachines(user.id)).unwrap(),
+            dispatch(fetchUserWithdrawals({ userId: user.id })).unwrap(),
+            dispatch(getUserBalance(user.id)).unwrap()
           ]);
         } catch (error) {
           console.error("Error fetching data:", error);
@@ -53,7 +60,6 @@ const DashboardHero = () => {
   const handleNavigation = (path: string) => {
     router.push(path);
   };
-
   interface DashboardCardProps {
     icon: React.ElementType;
     title: string;
@@ -115,19 +121,27 @@ const DashboardHero = () => {
 
   const dashboardCards = [
     {
+      icon: Wallet,
+      title: "Total Balance",
+      value: `$${balance?.balances?.total?.toLocaleString() || '0'}`,
+      subtitle: "Available funds",
+      path: "/profile/assignProfile",
+    },
+    {
+      icon: Coins,
+      title: "Mining Balance",
+      value: `$${balance?.balances?.mining?.toLocaleString() || '0'}`,
+      subtitle: "Mining earnings",
+      path: "/profile/assignProfile",
+    },
+    {
       icon: FileText,
       title: "Active Orders",
       value: activeMachinesCount.toString(),
       subtitle: "Current active machines",
       path: "/profile/assignProfile",
     },
-    {
-      icon: Heart,
-      title: "Total Profit",
-      value: `$${totalAccumulatedProfit.toFixed(0)}`,
-      subtitle: "Accumulated earnings",
-      path: "/profile/assignProfile",
-    },
+
     {
       icon: DollarSign,
       title: "Total Withdrawn",
@@ -157,7 +171,7 @@ const DashboardHero = () => {
           Track your activity and manage your account settings from your personalized dashboard.
         </p>
       </div>
-      <div className="mb-6 grid grid-cols-1 gap-3 px-4 sm:mb-8 sm:grid-cols-2 sm:gap-4 sm:px-0 lg:grid-cols-4 lg:gap-6 ">
+      <div className="mb-6 grid grid-cols-1 gap-3 px-4 sm:mb-8 sm:grid-cols-2 sm:gap-4 sm:px-0 lg:grid-cols-3 lg:gap-6 ">
         {dashboardCards.map((card, index) => (
           <DashboardCard
             key={index}

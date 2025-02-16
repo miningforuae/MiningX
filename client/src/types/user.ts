@@ -6,6 +6,7 @@ export interface User {
   country: string;
   role: 'user' | 'admin';
   phoneNumber:string;
+  mainBalance:string;
 }
 
 export interface LoginCredentials {

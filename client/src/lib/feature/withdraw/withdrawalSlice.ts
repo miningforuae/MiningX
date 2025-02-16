@@ -10,7 +10,11 @@ import { WithdrawalState ,  Withdrawal,
   WithdrawalListResponse,
   WithdrawalStats,
   ProcessWithdrawalPayload, 
-  FetchAllWithdrawalsParams} from '@/types/withdrawals';
+  FetchAllWithdrawalsParams,
+  BalanceHistoryParams,
+  UserBalanceResponse,
+  BalanceUpdateResponse,
+  BalanceUpdateRequest} from '@/types/withdrawals';
 
 
   
@@ -137,6 +141,67 @@ import { WithdrawalState ,  Withdrawal,
 
 
 
+// export const updateUserBalance = createAsyncThunk<
+//   BalanceUpdateResponse,
+//   BalanceUpdateRequest,
+//   { rejectValue: string }
+// >(
+//   'balance/update',
+//   async (balanceData, { rejectWithValue }) => {
+//     try {
+//       const response = await axiosInstance.post<BalanceUpdateResponse>(
+//         '/api/v1/balanceUpade/update',
+//         balanceData
+//       );
+//       return response.data;
+//     } catch (error: any) {
+//       return rejectWithValue(
+//         error.response?.data?.message || 'Failed to update user balance'
+//       );
+//     }
+//   }
+// );
+
+// export const getUserBalance = createAsyncThunk<
+//   UserBalanceResponse,
+//   string,  // userId
+//   { rejectValue: string }
+// >(
+//   'balance/getUser',
+//   async (userId, { rejectWithValue }) => {
+//     try {
+//       const response = await axiosInstance.get<UserBalanceResponse>(
+//         `/api/v1/balanceUpade/${userId}`
+//       );
+//       return response.data;
+//     } catch (error: any) {
+//       return rejectWithValue(
+//         error.response?.data?.message || 'Failed to fetch user balance'
+//       );
+//     }
+//   }
+// );
+
+export const getBalanceHistory = createAsyncThunk<
+  WithdrawalListResponse,  // Reusing the withdrawal list response type since structure is similar
+  BalanceHistoryParams,
+  { rejectValue: string }
+>(
+  'balance/history',
+  async (params, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get<WithdrawalListResponse>(
+        '/api/v1/balanceUpade/history',
+        { params }
+      );
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch balance history'
+      );
+    }
+  }
+);
 
 const initialState: WithdrawalState = {
   withdrawals: [],

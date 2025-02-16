@@ -50,7 +50,7 @@ const NavBar = () => {
     { label: "HOME", href: "/" },
     { label: "SHOP", href: "/shop" },
     { label: "ABOUT US", href: "/about" },
-    { label: "CONTACT US", href: "/contactUs" },
+    { label: "BOOK YOUR APPOINTMENT ", href: "/contactUs" },
   ];
 
   return (
@@ -67,7 +67,7 @@ const NavBar = () => {
               </div>
             </Link>
             <div className="relative">
-              <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-16">
                 {navLinks.map((link) => (
                   <Link
                     key={link.label}
@@ -196,7 +196,7 @@ const NavBar = () => {
                 />
               </div>
 
-              <nav className="mt-6 flex flex-col space-y-4">
+              <nav className="mt-6 flex flex-col space-y-12">
                 {/* Navigation Links */}
                 {navLinks.map((link) => (
                   <Link

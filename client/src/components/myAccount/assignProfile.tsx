@@ -10,7 +10,7 @@ import {
   Coins,
   Activity,
   Clock,
-  TrendingUp
+  TrendingUp,
 } from "lucide-react";
 import {
   fetchUserMachines,
@@ -22,19 +22,24 @@ import {
   ProfitUpdateStatus,
   UserProfitSummary,
 } from "@/types/userMachine";
+import { Button } from "@/components/ui/button";
+import SaleMachineModal from "./SaleMachineModal";
 
 const UserMachinesDashboard = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { userMachines, isLoading, error } = useSelector(
-    (state: RootState) => state.userMachine
+    (state: RootState) => state.userMachine,
   );
   const { user, isAuthenticated } = useSelector(
-    (state: RootState) => state.auth
+    (state: RootState) => state.auth,
   );
-  const [totalProfitData, setTotalProfitData] = React.useState<UserProfitSummary | null>(null);
+  const [totalProfitData, setTotalProfitData] =
+    React.useState<UserProfitSummary | null>(null);
   const [profitLoading, setProfitLoading] = React.useState(true);
   const [error1, setError] = React.useState<string | null>(null);
-
+  const [selectedMachine, setSelectedMachine] =
+    React.useState<UserMachine | null>(null);
+  const [isSaleModalOpen, setSaleModalOpen] = React.useState(false);
   useEffect(() => {
     const fetchData = async () => {
       if (!user?.email || !isAuthenticated) {
@@ -60,50 +65,20 @@ const UserMachinesDashboard = () => {
     fetchData();
   }, [dispatch, user, isAuthenticated]);
 
-  const StatsOverview: React.FC<{ profitData: UserProfitSummary }> = ({ profitData }) => (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-      <div className="group relative overflow-hidden rounded-2xl border border-zinc-800 bg-black p-6 transition-all duration-300 hover:border-[#21eb00]/50">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#21eb00]/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-        <div className="relative">
-          <div className="flex items-center space-x-3">
-            <div className="rounded-lg bg-[#21eb00]/10 p-2">
-              <Monitor className="h-6 w-6 text-[#21eb00]" />
-            </div>
-            <h3 className="text-sm font-medium text-zinc-400">Total Machines</h3>
-          </div>
-          <p className="mt-4 text-4xl font-bold tracking-tight text-white">
-            {profitData?.totalMachines || 0}
-          </p>
-          <div className="mt-2 flex items-center space-x-2 text-sm">
-            <Activity className="h-4 w-4 text-[#21eb00]" />
-            <span className="text-zinc-400">Active Miners</span>
-          </div>
-        </div>
-      </div>
+  const handleSaleSuccess = () => {
+    // Refresh the machines list
+    if (user?.email) {
+      dispatch(fetchUserMachines(user.email));
+      dispatch(fetchUserTotalProfit(user.email));
+    }
+  };
 
-      <div className="group relative overflow-hidden rounded-2xl border border-zinc-800 bg-black p-6 transition-all duration-300 hover:border-[#21eb00]/50">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#21eb00]/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-        <div className="relative">
-          <div className="flex items-center space-x-3">
-            <div className="rounded-lg bg-[#21eb00]/10 p-2">
-              <Coins className="h-6 w-6 text-[#21eb00]" />
-            </div>
-            <h3 className="text-sm font-medium text-zinc-400">Total Profit</h3>
-          </div>
-          <p className="mt-4 text-4xl font-bold tracking-tight text-white">
-            ${profitData?.totalProfit?.toFixed(0) || "0.00"}
-          </p>
-          <div className="mt-2 flex items-center space-x-2 text-sm">
-            <TrendingUp className="h-4 w-4 text-[#21eb00]" />
-            <span className="text-zinc-400">Accumulated Earnings</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const MachineCard: React.FC<{ machine: UserMachine }> = ({ machine }) => {
-    const [profitStatus, setProfitStatus] = React.useState<ProfitUpdateStatus | null>(null);
+  const MachineCard: React.FC<{
+    machine: UserMachine;
+    onSellClick: (machine: UserMachine) => void;
+  }> = ({ machine, onSellClick }) => {
+    const [profitStatus, setProfitStatus] =
+      React.useState<ProfitUpdateStatus | null>(null);
     const [loading, setLoading] = React.useState(false);
 
     const calculateProgress = () => {
@@ -115,7 +90,11 @@ const UserMachinesDashboard = () => {
     const getMachineIdentifier = () => {
       if (typeof machine.machine === "string") return machine.machine;
       if (machine.machine && typeof machine.machine === "object") {
-        return machine.machine.machineName || machine.machine._id || "Unknown Machine";
+        return (
+          machine.machine.machineName ||
+          machine.machine._id ||
+          "Unknown Machine"
+        );
       }
       return "Unknown Machine";
     };
@@ -123,23 +102,33 @@ const UserMachinesDashboard = () => {
     return (
       <div className="group relative overflow-hidden rounded-2xl border border-zinc-800 bg-black transition-all duration-500 hover:border-[#21eb00] hover:shadow-lg hover:shadow-[#21eb00]/10">
         <div className="absolute inset-0 bg-gradient-to-br from-[#21eb00]/5 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-        
+
         <div className="relative p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className={`h-3 w-3 rounded-full ${
-                machine.status === "active" 
-                  ? "animate-pulse bg-[#21eb00]" 
-                  : "bg-red-500"
-              }`} />
-              <span className="text-sm font-medium text-zinc-400">
-              active              </span>
+              <div
+                className={`h-3 w-3 rounded-full ${
+                  machine.status === "active"
+                    ? "animate-pulse bg-[#21eb00]"
+                    : "bg-red-500"
+                }`}
+              />
+              <span className="text-sm font-medium text-zinc-400">active </span>
             </div>
-            
+
             {!loading && profitStatus && (
               <div className="relative h-16 w-16">
-                <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 36 36">
-                  <circle cx="18" cy="18" r="16" className="fill-none stroke-zinc-800" strokeWidth="3" />
+                <svg
+                  className="h-full w-full -rotate-90 transform"
+                  viewBox="0 0 36 36"
+                >
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="16"
+                    className="fill-none stroke-zinc-800"
+                    strokeWidth="3"
+                  />
                   <circle
                     cx="18"
                     cy="18"
@@ -152,7 +141,10 @@ const UserMachinesDashboard = () => {
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                   <span className="text-lg font-bold text-white">
-                    {Math.max(0, Math.floor(profitStatus?.daysUntilNextUpdate || 0))}
+                    {Math.max(
+                      0,
+                      Math.floor(profitStatus?.daysUntilNextUpdate || 0),
+                    )}
                   </span>
                   <span className="text-xs text-zinc-400">days</span>
                 </div>
@@ -161,7 +153,7 @@ const UserMachinesDashboard = () => {
           </div>
 
           <div className="mt-6">
-            <h3 className="text-xl font-bold text-white group-hover:text-[#21eb00] transition-colors duration-300">
+            <h3 className="text-xl font-bold text-white transition-colors duration-300 group-hover:text-[#21eb00]">
               {getMachineIdentifier()}
             </h3>
             <div className="mt-2 flex items-center space-x-2 text-sm text-zinc-400">
@@ -187,7 +179,9 @@ const UserMachinesDashboard = () => {
               <div className="flex items-center space-x-2 text-zinc-400">
                 <Calendar className="h-4 w-4" />
                 <span>Activated:</span>
-                <span className="text-white">{new Date(machine.assignedDate).toLocaleDateString()}</span>
+                <span className="text-white">
+                  {new Date(machine.assignedDate).toLocaleDateString()}
+                </span>
               </div>
               <div className="flex items-center space-x-2 text-zinc-400">
                 <Clock className="h-4 w-4" />
@@ -195,53 +189,74 @@ const UserMachinesDashboard = () => {
               </div>
             </div>
           </div>
+          {machine.status === "active" && (
+            <Button
+              onClick={() => onSellClick(machine)}
+              className="bg-red-500/10 text-red-500 hover:bg-red-500/20 border-red-500/20 mt-4 w-full border"
+            >
+              Sell Machine
+            </Button>
+          )}
         </div>
       </div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-6 space-y-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen space-y-8 bg-zinc-950 p-6">
+      <div className="mx-auto max-w-7xl">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-white mb-2">Mining Dashboard</h2>
+          <h2 className="mb-2 text-3xl font-bold text-white">
+            Mining Dashboard
+          </h2>
           <p className="text-zinc-400">
-            Monitor your mining machines performance and profit accumulation in real-time.
+            Monitor your mining machines performance and profit accumulation in
+            real-time.
           </p>
         </div>
 
-        {!profitLoading && totalProfitData && (
-          <StatsOverview profitData={totalProfitData} />
-        )}
-
-        {error1 && (
-          <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-red-500">
-            <div className="flex items-center space-x-2">
-              <AlertCircle className="h-5 w-5" />
-              <p>Error: {error1}</p>
-            </div>
-          </div>
-        )}
-
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {userMachines && userMachines.length > 0 ? (
-            userMachines.map((machine) => (
-              <MachineCard
-                key={typeof machine._id === "string" 
-                  ? machine._id 
-                  : (typeof machine.machine === "object" && machine.machine._id) || "fallback-key"}
-                machine={machine}
-              />
-            ))
+        {userMachines && userMachines.length > 0 ? (
+  // Filter out inactive machines
+  userMachines.filter(machine => machine.status === "active").map((machine) => (
+    <MachineCard
+      key={
+        typeof machine._id === "string"
+          ? machine._id
+          : (typeof machine.machine === "object" &&
+              machine.machine._id) ||
+            "fallback-key"
+      }
+      machine={machine}
+      onSellClick={(machine) => {
+        setSelectedMachine(machine);
+        setSaleModalOpen(true);
+      }}
+    />
+  ))
           ) : (
             <div className="col-span-full flex min-h-[200px] items-center justify-center rounded-2xl border border-zinc-800 bg-black">
               <p className="text-zinc-400">
-                {isLoading ? "Loading machines..." : "No machines assigned yet."}
+                {isLoading
+                  ? "Loading machines..."
+                  : "No machines assigned yet."}
               </p>
             </div>
           )}
         </div>
       </div>
+
+      {selectedMachine && (
+        <SaleMachineModal
+          isOpen={isSaleModalOpen}
+          onClose={() => {
+            setSaleModalOpen(false);
+            setSelectedMachine(null);
+          }}
+          machine={selectedMachine}
+          onSuccess={handleSaleSuccess}
+        />
+      )}
     </div>
   );
 };

@@ -1,26 +1,32 @@
-'use client'
-
+// src/lib/store/store.ts
 import { configureStore } from '@reduxjs/toolkit';
-import { 
-  persistReducer, 
+import {
+  persistReducer,
   persistStore,
+  WebStorage,
 } from 'redux-persist';
-import { createTransform } from 'redux-persist';
-import type { WebStorage } from 'redux-persist/lib/types';
 import storage from 'redux-persist/lib/storage';
 import { FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist/es/constants';
 import { adminApiSlice } from '../feature/auth/adminApiSlice';
 import authReducer from '../feature/auth/authSlice';
 import userMachineReducer from '../feature/userMachine/usermachineApi';
+import balanceReducer from '../feature/userMachine/balanceSlice';
+import transactionReducer from '../feature/userMachine/transactionSlice';
+import contactReducer from '../feature/contact/contactsSlice';
+
+
 import { baseApiSlice } from './apiSlice';
 import { miningMachinesApiSlice } from '../feature/Machines/miningMachinesApiSlice';
-import withdrawalReducer from '../feature/withdraw/withdrawalSlice'
+import withdrawalReducer from '../feature/withdraw/withdrawalSlice';
 
 const PERSIST_KEYS = {
   ROOT: 'root',
   AUTH: 'auth',
   USER_MACHINE: 'userMachine',
-  WITHDRAWAL: 'withdrawal',  
+  WITHDRAWAL: 'withdrawal',
+  BALANCE: 'balance',
+  TRANSACTION:'transaction',
+  CONTACT: 'contact'
 } as const;
 
 interface PersistConfig {
@@ -29,23 +35,39 @@ interface PersistConfig {
   whitelist: string[];
 }
 
-const persistConfig: PersistConfig = {
-  key: PERSIST_KEYS.ROOT,
+// Create persist configs for each reducer that needs persistence
+const createPersistConfig = (key: string): PersistConfig => ({
+  key,
   storage,
-  whitelist: [PERSIST_KEYS.AUTH, PERSIST_KEYS.USER_MACHINE, PERSIST_KEYS.WITHDRAWAL], // Add WITHDRAWAL
-};
+  whitelist: key === PERSIST_KEYS.TRANSACTION 
+    ? ['transactions', 'saleHistory', 'lastPurchase', 'lastSale']
+    : ['data', 'userBalance', 'lastTransaction']
+});
 
-const persistedAuthReducer = persistReducer(persistConfig, authReducer);
-const persistedUserMachineReducer = persistReducer(persistConfig, userMachineReducer);
-const persistedWithdrawalReducer = persistReducer(persistConfig, withdrawalReducer); // Add this
+// Persist individual reducers
+const persistedAuthReducer = persistReducer(createPersistConfig(PERSIST_KEYS.AUTH), authReducer);
+const persistedUserMachineReducer = persistReducer(createPersistConfig(PERSIST_KEYS.USER_MACHINE), userMachineReducer);
+const persistedWithdrawalReducer = persistReducer(createPersistConfig(PERSIST_KEYS.WITHDRAWAL), withdrawalReducer);
+const persistedBalanceReducer = persistReducer(createPersistConfig(PERSIST_KEYS.BALANCE), balanceReducer);
+const persistedTransactionReducer = persistReducer(createPersistConfig(PERSIST_KEYS.TRANSACTION), transactionReducer);
+const persistedContactReducer = persistReducer(createPersistConfig(PERSIST_KEYS.CONTACT), contactReducer);
+
 
 export const store = configureStore({
   reducer: {
     [baseApiSlice.reducerPath]: baseApiSlice.reducer,
     [PERSIST_KEYS.AUTH]: persistedAuthReducer,
     [PERSIST_KEYS.USER_MACHINE]: persistedUserMachineReducer,
-    [PERSIST_KEYS.WITHDRAWAL]: persistedWithdrawalReducer, // Add this
+    [PERSIST_KEYS.WITHDRAWAL]: persistedWithdrawalReducer,
+    [PERSIST_KEYS.BALANCE]: persistedBalanceReducer,
     [miningMachinesApiSlice.reducerPath]: miningMachinesApiSlice.reducer,
+    [PERSIST_KEYS.TRANSACTION]: persistedTransactionReducer,
+    [PERSIST_KEYS.CONTACT]: persistedContactReducer,
+
+
+    
+
+
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -59,6 +81,5 @@ export const store = configureStore({
 });
 
 export const persistor = persistStore(store);
-
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

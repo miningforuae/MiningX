@@ -4,7 +4,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 export const miningMachinesApiSlice = createApi({
   reducerPath: 'miningMachinesApi',
   baseQuery: fetchBaseQuery({ 
-    baseUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://backendminingx-production.up.railway.app'
+    baseUrl: process.env.NEXT_PUBLIC_BASE_URL 
   }),
   tagTypes: ['MiningMachine'],
   endpoints: (builder) => ({

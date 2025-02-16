@@ -11,7 +11,10 @@ import { UpdateProfitPayload,UserMachine,
     Transaction,
     WithdrawalPayload,
     TransactionResponse,
-    WithdrawalResponse} from '@/types/userMachine';
+    WithdrawalResponse,
+    PurchaseResponse,
+    PurchaseMachinePayload,
+    EligibilityResponse} from '@/types/userMachine';
 
 // Async Thunks
 export const assignMachineToUser = createAsyncThunk<
@@ -221,6 +224,54 @@ export const fetchUserTransactions = createAsyncThunk<
     }
   }
 );
+
+
+
+export const purchaseAndAssignMachine = createAsyncThunk<
+  PurchaseResponse,
+  PurchaseMachinePayload,
+  { state: RootState; rejectValue: string }
+>(
+  'userMachine/purchaseAndAssign',
+  async ({ userId, machineId, quantity = 1 }, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post<PurchaseResponse>('/api/v1/purchase', {
+        userId,
+        machineId,
+        quantity
+      });
+      return response.data;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to purchase machine';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Check purchase eligibility thunk
+export const checkPurchaseEligibility = createAsyncThunk<
+  EligibilityResponse,
+  PurchaseMachinePayload,
+  { state: RootState; rejectValue: string }
+>(
+  'userMachine/checkEligibility',
+  async ({ userId, machineId, quantity = 1 }, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get<EligibilityResponse>('/api/v1/check-eligibility', {
+        params: {
+          userId,
+          machineId,
+          quantity
+        }
+      });
+      return response.data;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to check purchase eligibility';
+      return rejectWithValue(errorMessage);
+    }
+  }
+
+)
 
 // Initial State
 const initialState: UserMachineState = {

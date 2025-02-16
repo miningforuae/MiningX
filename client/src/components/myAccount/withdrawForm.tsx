@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   DollarSign,
   Loader2,
   ArrowRight,
   AlertCircle,
   Check,
-  Info
+  Info,
+  Wallet
 } from "lucide-react";
 import {
   Dialog,
@@ -20,11 +21,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AppDispatch } from "@/lib/store/store";
-import {  requestWithdrawal } from "@/lib/feature/withdraw/withdrawalSlice";
+import { AppDispatch, RootState } from "@/lib/store/store";
+import { requestWithdrawal } from "@/lib/feature/withdraw/withdrawalSlice";
 
 interface WithdrawalDialogProps {
-  availableBalance: number;
   userEmail: string;
   onSuccess?: () => void;
 }
@@ -32,10 +32,13 @@ interface WithdrawalDialogProps {
 const MIN_WITHDRAWAL = 50;
 
 const WithdrawalDialog: React.FC<WithdrawalDialogProps> = ({
-  availableBalance,
   userEmail,
   onSuccess
 }) => {
+  // Get balance from Redux state
+  const balance = useSelector((state: RootState) => state.balance.userBalance);
+  const availableBalance = balance?.balances?.total || 0;
+  
   const [amount, setAmount] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
@@ -130,11 +133,19 @@ const WithdrawalDialog: React.FC<WithdrawalDialogProps> = ({
             Withdraw Funds
           </DialogTitle>
           <DialogDescription className="space-y-4">
-            <div className="flex flex-col gap-1 p-3 sm:p-4 bg-zinc-950 rounded-lg border border-zinc-800">
-              <span className="text-sm sm:text-base text-zinc-400">Available Balance</span>
-              <span className="text-xl sm:text-2xl font-bold text-emerald-400">
-                ${availableBalance?.toFixed(0)}
-              </span>
+            <div className="flex flex-col gap-3 p-4 bg-zinc-950 rounded-lg border border-zinc-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-zinc-900 rounded-lg">
+                  <Wallet className="h-5 w-5 text-emerald-400" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm text-zinc-400">Total Balance</span>
+                  <span className="text-xl font-bold text-emerald-400">
+                    ${balance?.balances?.total?.toLocaleString() || '0'}
+                  </span>
+                </div>
+              </div>
+             
             </div>
             <div className="flex items-center gap-2 text-xs sm:text-sm text-zinc-300 bg-zinc-950/50 p-2 sm:p-3 rounded-lg">
               <Info className="h-4 w-4 text-emerald-400" />

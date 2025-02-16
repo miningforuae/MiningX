@@ -10,6 +10,12 @@ const nextConfig = {
         port: "",
         pathname: "/storage/shironam-media/**",
       },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        port: "",
+        pathname: "/dt1tch0v9/image/upload/**",
+      },
     ],
   },
   async rewrites() {
@@ -20,9 +26,7 @@ const nextConfig = {
       },
     ];
   },
-
   trailingSlash: true,
-
   webpack: (config) => {
     config.resolve.fallback = { fs: false, net: false, tls: false };
     return config;

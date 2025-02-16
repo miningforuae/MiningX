@@ -35,10 +35,13 @@ export interface Transaction {
   _id: string;
   user: string;
   amount: number;
-  transactionDate: Date | string; // Add string type to handle date strings
-  type: 'withdrawal' | 'deposit'; // Changed from 'profit' to match your component
-  status: 'completed' | 'pending' | 'failed'; // Add status field
-  details?: string; // Make details optional
+  transactionDate: Date | string;
+  type: 'withdrawal' | 'profit' | 'MACHINE_PURCHASE' | 'MACHINE_SALE';
+  status: 'pending' | 'approved' | 'rejected' | 'completed';
+  details?: string;
+  adminComment?: string;
+  processedBy?: string;
+  processedAt?: Date | string;
 }
 export interface WithdrawalResponse {
   message: string;
@@ -98,4 +101,53 @@ export interface TransactionFilter {
   startDate?: string;
   endDate?: string;
   searchQuery?: string;
+}
+
+
+
+export interface PurchaseResponse {
+  message: string;
+  assignments: UserMachine[];
+  transaction: {
+    totalCost: number;
+    remainingBalance: number;
+  };
+}
+
+export interface EligibilityResponse {
+  canPurchase: boolean;
+  userBalance: number;
+  requiredAmount: number;
+  shortfall: number;
+  machine: {
+    name: string;
+    pricePerUnit: number;
+    quantity: number;
+  };
+}
+
+export interface PurchaseMachinePayload {
+  userId: string;
+  machineId: string;
+  quantity?: number;
+}
+
+
+export interface SaleResponse {
+  message: string;
+  sale: {
+    originalPrice: number;
+    deduction: number;
+    sellingPrice: number;
+    machineDetails: {
+      name: string;
+      id: string;
+    };
+  };
+  transaction: Transaction;
+  newBalance: {
+    total: number;
+    main: number;
+    mining: number;
+  };
 }

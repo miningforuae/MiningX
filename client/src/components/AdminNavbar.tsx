@@ -77,6 +77,12 @@ export const AdminNavbar = () => {
               All Transaction{" "}
             </Link>
           </div>
+          <Link
+              href="/contactUs/admin"
+              className="text-gray-300 hover:text-[#21eb00]"
+            >
+              All Contact{" "}
+            </Link>
           <button
             onClick={() => console.log("Logout clicked")}
             className="flex items-center space-x-2 text-[#21eb00] hover:text-green-400"

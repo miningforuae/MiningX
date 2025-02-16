@@ -38,6 +38,7 @@ import { AppDispatch } from "@/lib/store/store";
 import { fetchUserWithdrawals } from "@/lib/feature/withdraw/withdrawalSlice";
 import TransactionsTab from "@/components/AllProduct/TranscationTab";
 import LandingLayout from "@/components/Layouts/LandingLayout";
+import UserBalanceUpdate from "@/components/AllUser/updateBalance";
 
 interface RootState {
   userMachine: {
@@ -177,7 +178,8 @@ const UserDetailsPage = () => {
 
   return (
           <LandingLayout>
-    
+        <UserBalanceUpdate userId={userId} />
+
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 p-6 text-gray-50">
       <div className="mx-auto max-w-7xl">
         <Button
@@ -315,6 +317,9 @@ const UserDetailsPage = () => {
         </Tabs>
       </div>
     </div>
+
+
+
 
     </LandingLayout>
 
