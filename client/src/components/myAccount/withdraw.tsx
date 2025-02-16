@@ -6,7 +6,9 @@ import {
   Coins,
   Loader2,
   ArrowUpRight,
-  Wallet
+  Wallet,
+  DollarSign,
+  Plus
 } from "lucide-react";
 import { fetchUserTotalProfit } from "@/lib/feature/userMachine/usermachineApi";
 import { AppDispatch, RootState } from "@/lib/store/store";
@@ -15,6 +17,7 @@ import TransactionHistory from "./TransactionHistory";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { UserProfitSummary } from "@/types/userMachine";
 import { getUserBalance } from "@/lib/feature/userMachine/balanceSlice";
+import { Button } from "../ui/button";
 
 
 interface StatsOverviewProps {
@@ -121,9 +124,19 @@ const WithdrawalDashboard = () => {
         </div>
       </div>
   
-      {/* Existing Total Profit Card */}
-      <div className="group relative overflow-hidden rounded-2xl border border-zinc-800 bg-black p-8 transition-all duration-300 hover:border-[#21eb00]/50">
-        {/* ... existing code ... */}
+      {/* Action Buttons */}
+      <div className="grid grid-cols-1 gap-4 px-4 sm:px-8 md:px-12 lg:px-48">
+        {/* Deposit Button */}
+        <Button
+          size="lg"
+          onClick={() => window.open('https://wa.me/+1234567890', '_blank')}
+          className="bg-gradient-to-br p-4 sm:p-8 from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white font-medium shadow-lg shadow-blue-500/20 transition-all duration-300 ease-out hover:shadow-blue-500/30 hover:scale-[1.02]"
+        >
+          <Plus className="mr-2 h-6 w-6 sm:h-10 sm:w-10 text-2xl sm:text-4xl" />
+          Deposit
+        </Button>
+  
+    
       </div>
     </div>
   );

@@ -129,8 +129,16 @@ export default function AllUsersPage() {
   };
 
   const handleRowClick = (userId: string) => {
-    
+    // Prevent navigation if userId is empty
+    if (!userId) {
+      toast.error("Invalid user ID");
+      return;
+    }
+    // Navigate to the user profile page
+    router.push(`/AllUser/${userId}`);
   };
+
+
 
   return (
     <div className="min-h-screen bg-black p-6 text-gray-100">

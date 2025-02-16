@@ -203,41 +203,11 @@ const MiningHeroSlider = () => {
         </div>
 
         {/* Navigation */}
-        <div className="absolute bottom-8 left-8 flex items-center space-x-12 mt-24">
-          <button
-            onClick={prevSlide}
-            className="group rounded-full border border-gray-600 p-3 transition-all hover:border-green-500 hover:bg-green-500/10"
-          >
-            <ChevronLeft className="h-6 w-6 text-white transition-colors group-hover:text-green-500" />
       
-          </button>
-          <div className="flex space-x-2">
-            {slides.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => !isAnimating && setCurrentSlide(index)}
-                className={`h-2 w-2 rounded-full transition-all duration-300 
-                  ${index === currentSlide ? "w-8 bg-green-500" : "bg-gray-600"}`}
-              />
-            ))}
-          </div>
-          <button
-            onClick={nextSlide}
-            className="rounded-full border border-gray-600 p-2 transition-colors hover:border-green-500"
-          >
-            <ChevronRight className="h-6 w-6 text-white" />
-          </button>
-        </div>
       </div>
 
       {/* Progress Bar */}
-      <div className="absolute bottom-0 left-0 h-1 w-full bg-gray-800">
-        <div
-          className="h-full bg-green-500 transition-all duration-300"
-          style={{ width: `${((currentSlide + 1) / slides.length) * 100}%` }}
-        />
-      </div>
-
+    
       <style jsx>{`
         @keyframes float {
           0% {
