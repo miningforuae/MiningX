@@ -15,7 +15,6 @@ const ProductUpload = () => {
     priceRange: "",
     coinsMined: "",
     monthlyProfit: "",
-    ProfitAdmin:"",
     description: "",
   });
   const [images, setImages] = useState<File[]>([]);
@@ -29,7 +28,6 @@ const ProductUpload = () => {
       priceRange: "",
       coinsMined: "",
       monthlyProfit: "",
-      ProfitAdmin:"",
       description: "",
     });
     setImages([]);
@@ -231,19 +229,7 @@ const ProductUpload = () => {
               />
             </div>
           </div>
-          <div>
-            <label className="mb-2 block text-sm font-semibold text-gray-300">
-              Profit Per month
-            </label>
-            <input
-              className="w-full rounded-lg border border-gray-700 bg-gray-800 p-3 text-white"
-              name="ProfitAdmin"
-              value={formData.ProfitAdmin}
-              onChange={handleInputChange}
-              placeholder="Enter machine description..."
-              type="number"
-            />
-          </div>
+        
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-300">
               Description

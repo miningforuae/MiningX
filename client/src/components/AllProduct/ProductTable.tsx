@@ -155,7 +155,6 @@ const AdminProductTable = () => {
                 <th className="px-6 py-4 text-gray-300">Price Range</th>
                 <th className="px-6 py-4 text-gray-300">Coins Mined</th>
                 <th className="px-6 py-4 text-gray-300">Monthly Profit</th>
-                <th className="px-6 py-4 text-gray-300">Profit Admin</th>
                 <th className="px-6 py-4 text-gray-300">Actions</th>
               </tr>
             </thead>
@@ -198,9 +197,7 @@ const AdminProductTable = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-green-400">${machine.monthlyProfit}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-green-400">${machine.ProfitAdmin}</div>
-                    </td>
+                 
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex gap-3">
                         <button
