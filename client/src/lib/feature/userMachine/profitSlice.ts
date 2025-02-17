@@ -6,7 +6,8 @@ import {
   UpdateProfitPayload,
   UserMachine,
   ProfitUpdateStatus,
-  UserProfitSummary 
+  UserProfitSummary, 
+  ProfitPercentageResponse
 } from '@/types/userMachine';
 
 // Async Thunks
@@ -85,18 +86,42 @@ export const fetchUserTotalProfit = createAsyncThunk<
   }
 );
 
+export const fetchProfitPercentages = createAsyncThunk<
+  ProfitPercentageResponse,
+  string,
+  { state: RootState, rejectValue: string }
+>(
+  'profit/fetchPercentages',
+  async (userId, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get<ProfitPercentageResponse>(
+        `/api/v1/profit/percentages/${userId}`
+      );
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch profit percentages'
+      );
+    }
+  }
+);
+
 interface ProfitState {
   profitUpdates: Record<string, ProfitUpdateStatus>;
   totalProfit: UserProfitSummary | null;
   loading: boolean;
   error: string | null;
+  profitPercentages: ProfitPercentageResponse | null; // Add this
+
 }
 
 const initialState: ProfitState = {
   profitUpdates: {},
   totalProfit: null,
   loading: false,
-  error: null
+  error: null,
+  profitPercentages: null, // Add this
+
 };
 
 const profitSlice = createSlice({
@@ -146,6 +171,18 @@ const profitSlice = createSlice({
       .addCase(fetchUserTotalProfit.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Failed to fetch total profit';
+      })
+      .addCase(fetchProfitPercentages.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchProfitPercentages.fulfilled, (state, action) => {
+        state.loading = false;
+        state.profitPercentages = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchProfitPercentages.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to fetch profit percentages';
       });
   },
 });

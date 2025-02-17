@@ -151,3 +151,20 @@ export interface SaleResponse {
     mining: number;
   };
 }
+
+
+export interface MachineProfitPercentage {
+  machineId: string;
+  machineName: string;
+  profit: number;
+  percentage: string;
+  monthlyProfitRate: number;
+  lastUpdate: Date;
+}
+
+export interface ProfitPercentageResponse {
+  machines: MachineProfitPercentage[];
+  totalProfit: number;
+  machineCount: number;
+  timestamp: Date;
+}
