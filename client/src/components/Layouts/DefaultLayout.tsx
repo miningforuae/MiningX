@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import Header from "@/components/Header";
 import { AdminNavbar } from "../AdminNavbar";
 
 export default function DefaultLayout({
@@ -13,7 +12,6 @@ export default function DefaultLayout({
   return (
     <div className="">
       <div className="">
-        <Header />
         <AdminNavbar/>
 
         <main>

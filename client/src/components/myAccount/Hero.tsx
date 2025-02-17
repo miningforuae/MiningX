@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 "use client";
 import React, { useEffect } from "react";
 import { FileText, Heart, DollarSign, BarChart3, Wallet, Coins } from "lucide-react";

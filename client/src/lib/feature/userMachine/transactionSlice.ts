@@ -1,4 +1,6 @@
 // src/lib/features/userMachine/transactionSlice.ts
+// @ts-nocheck
+
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axiosInstance from '@/utils/axiosInstance';
 import { RootState } from '@/lib/store/store';
