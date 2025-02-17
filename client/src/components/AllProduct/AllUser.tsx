@@ -52,6 +52,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import UserBalanceUpdate from "../AllUser/updateBalance";
+
 interface User {
   _id?: string;
   id?: string;
@@ -129,16 +130,12 @@ export default function AllUsersPage() {
   };
 
   const handleRowClick = (userId: string) => {
-    // Prevent navigation if userId is empty
     if (!userId) {
       toast.error("Invalid user ID");
       return;
     }
-    // Navigate to the user profile page
     router.push(`/AllUser/${userId}`);
   };
-
-
 
   return (
     <div className="min-h-screen bg-black p-6 text-gray-100">
@@ -152,7 +149,7 @@ export default function AllUsersPage() {
 
         <CardContent>
           {error && (
-            <div className="bg-red-500/10 border-red-500/30 text-red-400 mb-4 rounded-lg border p-4">
+            <div className="mb-4 rounded-lg border bg-red-500/10 border-red-500/30 p-4 text-red-400">
               {error}
             </div>
           )}
@@ -166,55 +163,41 @@ export default function AllUsersPage() {
               className="border-gray-600 bg-gray-700 pl-10 text-gray-100 focus:ring-2 focus:ring-blue-500"
             />
           </div>
+
           <Dialog open={isBalanceModalOpen} onOpenChange={setIsBalanceModalOpen}>
-        <DialogContent className="bg-gray-800 border-gray-700 text-white sm:max-w-[600px]">
-          {selectedUser && (
-            <UserBalanceUpdate 
-              userId={selectedUser._id || selectedUser.id || ""} 
-              userName={`${selectedUser.firstName} ${selectedUser.lastName}`}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+            <DialogContent className="border-gray-700 bg-gray-800 text-white sm:max-w-[600px]">
+              {selectedUser && (
+                <UserBalanceUpdate 
+                  userId={selectedUser._id || selectedUser.id || ""} 
+                  userName={`${selectedUser.firstName} ${selectedUser.lastName}`}
+                />
+              )}
+            </DialogContent>
+          </Dialog>
+
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow className="bg-black hover:bg-gray-700">
                   <TableHead className="font-medium text-white">Name</TableHead>
-                  <TableHead className="font-medium text-white">
-                    phoneNumber
-                  </TableHead>
-                  <TableHead className="font-medium text-white">
-                    Email
-                  </TableHead>
-                  <TableHead className="font-medium text-white">
-                    Country
-                  </TableHead>
+                  <TableHead className="font-medium text-white">Phone Number</TableHead>
+                  <TableHead className="font-medium text-white">Email</TableHead>
+                  <TableHead className="font-medium text-white">Country</TableHead>
                   <TableHead className="font-medium text-white">Role</TableHead>
-                  <TableHead className="font-medium text-white">
-                    Created At
-                  </TableHead>
-                  <TableHead className="text-right font-medium text-white">
-                    Actions
-                  </TableHead>
+                  <TableHead className="font-medium text-white">Created At</TableHead>
+                  <TableHead className="text-right font-medium text-white">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell
-                      colSpan={8}
-                      className="text-center text-gray-400"
-                    >
+                    <TableCell colSpan={8} className="text-center text-gray-400">
                       Loading users...
                     </TableCell>
                   </TableRow>
                 ) : filteredUsers.length === 0 ? (
                   <TableRow>
-                    <TableCell
-                      colSpan={8}
-                      className="text-center text-gray-400"
-                    >
+                    <TableCell colSpan={8} className="text-center text-gray-400">
                       No users found
                     </TableCell>
                   </TableRow>
@@ -223,7 +206,12 @@ export default function AllUsersPage() {
                     <TableRow
                       key={user._id || user.id}
                       className="cursor-pointer bg-gray-700 text-[#ffffff] transition-colors hover:bg-gray-600"
-                      onClick={() => handleRowClick(user._id || user.id || "")}
+                      onClick={(e) => {
+                        // Only navigate if not clicking on the actions cell
+                        if (!(e.target as HTMLElement).closest('.actions-cell')) {
+                          handleRowClick(user._id || user.id || "");
+                        }
+                      }}
                     >
                       <TableCell className="font-medium">
                         {user.firstName || "N/A"} {user.lastName || "N/A"}
@@ -244,16 +232,11 @@ export default function AllUsersPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span
-                          className={`
-                          rounded-full px-2 py-1 text-xs font-semibold
-                          ${
-                            user.role === "admin"
-                              ? "bg-blue-500/20 text-[#22c55e]"
-                              : "bg-green-500/20 text-green-400"
-                          }
-                        `}
-                        >
+                        <span className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                          user.role === "admin"
+                            ? "bg-blue-500/20 text-[#22c55e]"
+                            : "bg-green-500/20 text-green-400"
+                        }`}>
                           {user.role || "N/A"}
                         </span>
                       </TableCell>
@@ -263,78 +246,87 @@ export default function AllUsersPage() {
                           {formatDate(user.createdAt)}
                         </div>
                       </TableCell>
-                      <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="h-8 w-8 p-0 text-gray-400 hover:text-white"
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent 
-                      className="w-48 bg-gray-800 border-gray-700 text-gray-100"
-                      align="end"
-                    >
-                      <DropdownMenuItem
-                        className="flex items-center hover:bg-gray-700 cursor-pointer"
-                        onClick={() => handleRowClick(user._id || user.id || "")}
-                      >
-                        <User className="mr-2 h-4 w-4" />
-                        User Profile
-                      </DropdownMenuItem>
-                      
-                      <DropdownMenuItem
-                        className="flex items-center hover:bg-gray-700 cursor-pointer"
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setIsBalanceModalOpen(true);
-                        }}
-                      >
-                        <DollarSign className="mr-2 h-4 w-4" />
-                        Update Balance
-                      </DropdownMenuItem>
-                      
-                      <DropdownMenuSeparator className="bg-gray-700" />
-                      
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <DropdownMenuItem
-                            className="flex items-center text-red-400 hover:bg-red-500/20 hover:text-red-400 cursor-pointer"
-                            onSelect={(e) => e.preventDefault()}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete User
-                          </DropdownMenuItem>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent className="border-gray-700 bg-gray-800">
-                          <AlertDialogHeader>
-                            <AlertDialogTitle className="text-gray-100">
-                              Delete User Account
-                            </AlertDialogTitle>
-                            <AlertDialogDescription className="text-gray-400">
-                              Are you sure you want to delete {user.firstName}{" "}
-                              {user.lastName} account? This action cannot be
-                              undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel className="bg-gray-700 text-gray-300 hover:bg-gray-600">
-                              Cancel
-                            </AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDeleteUser(user._id || user.id || "")}
-                              className="bg-red-500 hover:bg-red-600 text-white"
+                      <TableCell className="text-right actions-cell">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                            <Button
+                              variant="ghost"
+                              className="h-8 w-8 p-0 text-gray-400 hover:text-white"
                             >
-                              Delete User
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent 
+                            className="w-48 border-gray-700 bg-gray-800 text-gray-100"
+                            align="end"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <DropdownMenuItem
+                              className="flex cursor-pointer items-center hover:bg-gray-700"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRowClick(user._id || user.id || "");
+                              }}
+                            >
+                              <User className="mr-2 h-4 w-4" />
+                              User Profile
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuItem
+                              className="flex cursor-pointer items-center hover:bg-gray-700"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedUser(user);
+                                setIsBalanceModalOpen(true);
+                              }}
+                            >
+                              <DollarSign className="mr-2 h-4 w-4" />
+                              Update Balance
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuSeparator className="bg-gray-700" />
+                            
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <DropdownMenuItem
+                                  className="flex cursor-pointer items-center text-red-400 hover:bg-red-500/20 hover:text-red-400"
+                                  onSelect={(e) => e.preventDefault()}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete User
+                                </DropdownMenuItem>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent className="border-gray-700 bg-gray-800">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle className="text-gray-100">
+                                    Delete User Account
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription className="text-gray-400">
+                                    Are you sure you want to delete {user.firstName}{" "}
+                                    {user.lastName} account? This action cannot be
+                                    undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel className="bg-gray-700 text-gray-300 hover:bg-gray-600">
+                                    Cancel
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteUser(user._id || user.id || "");
+                                    }}
+                                    className="bg-red-500 text-white hover:bg-red-600"
+                                  >
+                                    Delete User
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
