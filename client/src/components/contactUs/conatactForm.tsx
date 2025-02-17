@@ -95,16 +95,16 @@ const ContactForm = () => {
   useEffect(() => {
     const detectCountry = async () => {
       try {
-        const response = await fetch('https://ipapi.co/json/');
+        const response = await fetch('http://ip-api.com/json');
         const data = await response.json();
-        const countryOption = countryOptions.find(option => option.value === data.country_code);
+        const countryOption = countryOptions.find(option => 
+          option.value === data.countryCode
+        );
         if (countryOption) {
           setSelectedCountry(countryOption);
         }
       } catch (error) {
-        console.error('Error detecting country:', error);
-      } finally {
-        setLoadingLocation(false);
+        console.error('Error:', error);
       }
     };
 

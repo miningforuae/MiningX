@@ -161,7 +161,7 @@ const ProfilePage = () => {
                     onChange={handleInputChange}
                     className="border-zinc-800 bg-zinc-900/50 text-white"
                     disabled={isLoading}
-                    placeholder="Enter your country"
+                    placeholder="Enter your Number"
                   />
                 </div>
                 <div className="flex justify-end space-x-3 pt-4">

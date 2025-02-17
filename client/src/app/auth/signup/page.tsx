@@ -80,11 +80,20 @@ export default function RegisterPage() {
   useEffect(() => {
     const detectCountry = async () => {
       try {
-        const response = await fetch('https://ipapi.co/json/');
+        const response = await fetch('http://ip-api.com/json');
         const data = await response.json();
-        const countryOption = countryOptions.find(option => option.value === data.country_code);
+        // ip-api returns 'countryCode' instead of 'country_code'
+        const countryOption = countryOptions.find(option => 
+          option.value === data.countryCode
+        );
         if (countryOption) {
           setSelectedCountry(countryOption);
+        } else {
+          // Fallback to default country (optional)
+          const defaultCountry = countryOptions.find(option => 
+            option.value === 'US'
+          );
+          setSelectedCountry(defaultCountry);
         }
       } catch (error) {
         console.error('Error detecting country:', error);
@@ -92,7 +101,7 @@ export default function RegisterPage() {
         setLoadingLocation(false);
       }
     };
-
+  
     detectCountry();
   }, []);
 
