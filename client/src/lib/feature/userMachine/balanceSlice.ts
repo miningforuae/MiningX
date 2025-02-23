@@ -22,12 +22,13 @@ interface BalanceWithMachines extends Balance {
   };
 }
 
+// Simplified UpdateBalancePayload to remove balanceType
 interface UpdateBalancePayload {
   userId: string;
   amount: number;
   type: 'withdrawal' | 'profit';
-  balanceType?: 'admin' | 'mining';  // Add this field
 }
+
 interface Transaction {
   _id: string;
   user: string;
@@ -85,7 +86,6 @@ export const updateBalance = createAsyncThunk<
   }
 );
 
-// New thunk for processing withdrawals
 export const processWithdrawal = createAsyncThunk<
   BalanceUpdateResponse,
   ProcessWithdrawalPayload,
@@ -104,6 +104,7 @@ export const processWithdrawal = createAsyncThunk<
     }
   }
 );
+
 export const getTransactions = createAsyncThunk(
   'balance/getTransactions',
   async (userId: string, { rejectWithValue }) => {
@@ -115,24 +116,25 @@ export const getTransactions = createAsyncThunk(
     }
   }
 );
-// Updated state interface to include pending withdrawals
+
 interface BalanceState {
   userBalance: BalanceWithMachines | null;
   lastTransaction: Transaction | null;
-  transactions: Transaction[];  // Add this
+  transactions: Transaction[];
   loading: boolean;
   error: string | null;
-  pendingWithdrawals?: Transaction[];
+  pendingWithdrawals: Transaction[];
 }
 
 const initialState: BalanceState = {
   userBalance: null,
   lastTransaction: null,
-  transactions: [],  // Initialize this
+  transactions: [],
   loading: false,
   error: null,
   pendingWithdrawals: []
 };
+
 const balanceSlice = createSlice({
   name: 'balance',
   initialState,
@@ -170,11 +172,10 @@ const balanceSlice = createSlice({
             ...action.payload.balances
           };
         }
-        // Add withdrawal to pending list if it's a withdrawal
         if (action.payload.transaction.type === 'withdrawal' && 
             action.payload.transaction.status === 'pending') {
           state.pendingWithdrawals = [
-            ...(state.pendingWithdrawals || []),
+            ...state.pendingWithdrawals,
             action.payload.transaction
           ];
         }
@@ -196,12 +197,9 @@ const balanceSlice = createSlice({
             ...action.payload.balances
           };
         }
-        // Remove from pending withdrawals if it was there
-        if (state.pendingWithdrawals) {
-          state.pendingWithdrawals = state.pendingWithdrawals.filter(
-            w => w._id !== action.payload.transaction._id
-          );
-        }
+        state.pendingWithdrawals = state.pendingWithdrawals.filter(
+          w => w._id !== action.payload.transaction._id
+        );
         state.error = null;
       })
       .addCase(processWithdrawal.rejected, (state, action) => {

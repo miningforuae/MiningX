@@ -42,7 +42,7 @@ export default function LoginPage() {
       setTimeout(() => {
         const authState = store.getState().auth;
         console.log('Auth State before navigation:', authState);
-        router.push("/");
+        router.push("/profile");
       }, 100);
       
     } catch (error) {

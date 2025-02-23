@@ -12,9 +12,9 @@ const MiningHeroSlider = () => {
   const slides = [
     {
       title: "Start Mining Bitcoin",
-      subtitle: "Today",
-      subheader: "Turnkey Solution",
-      description: "Your turnkey solution for buying, selling, and mining cryptocurrencies",
+      subtitle: "to Start Mining Today",
+      subheader: "",
+      description: "Your  solution for buying, selling, and mining cryptocurrencies",
       image: "/mining-facility.jpg",
       stats: [
         {
@@ -149,7 +149,7 @@ const MiningHeroSlider = () => {
             {/* CTA Button */}
             <button className="group relative overflow-hidden rounded-full bg-green-500 px-8 py-4 text-white transition-all hover:bg-green-600">
               <span className="relative z-10 flex items-center justify-center space-x-2">
-                <Bitcoin className="h-5 w-5" />
+                {/* <Bitcoin className="h-5 w-5" /> */}
                 <span>Start Mining Bitcoin Now</span>
               </span>
               <div className="absolute inset-0 -translate-x-full transform bg-green-400 transition-transform group-hover:translate-x-0" />
