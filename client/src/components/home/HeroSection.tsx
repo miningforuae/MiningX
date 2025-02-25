@@ -15,7 +15,7 @@ const MiningHeroSlider = () => {
       subtitle: "to Start Mining Today",
       subheader: "",
       description: "Your  solution for buying, selling, and mining cryptocurrencies",
-      image: "/mining-facility.jpg",
+      image: "/hh.png",
       stats: [
         {
           value: "98%",
@@ -189,7 +189,7 @@ const MiningHeroSlider = () => {
             <div className="absolute inset-0 z-20 bg-[#101010]/20" />
             
             <Image
-              src="/hero-2.webp"
+              src="/hh.png"
               alt="Mining Facility"
               className="h-full w-full transform object-cover transition-transform duration-700 hover:scale-110"
               width={400}
