@@ -35,7 +35,7 @@ const MiningHeroSlider = () => {
         },
         {
           value: "5000+",
-          label: "Miners Sold",
+          label: "Ecominex Sold",
           subtext: "We sell and deliver worldwide",
         },
       ],

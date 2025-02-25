@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useGetAllMiningMachinesQuery } from "@/lib/feature/Machines/miningMachinesApiSlice";
 import { Card, CardContent } from "@/components/ui/card";
+import ShareMachines from "./shareMachine";
 
 interface Machine {
   _id: string;
@@ -165,8 +166,9 @@ const Shop: React.FC<ShopProps> = ({
             <ProductCard key={product._id || index} product={product} />
           ))}
         </div>
+        <ShareMachines/>
 
-        {isHomePage && displayProducts.length > 0 && (
+        {/* {isHomePage && displayProducts.length > 0 && (
           <div className="mt-16 text-center">
             <button
               onClick={() => router.push('/shop')}
@@ -178,7 +180,7 @@ const Shop: React.FC<ShopProps> = ({
               </span>
             </button>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

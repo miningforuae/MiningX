@@ -29,7 +29,7 @@ export default function WeMineSection() {
   
             {/* Miner-Centric Approach */}
             <div>
-              <h2 className="font-bold text-xl mb-2">Miner-centric approach</h2>
+              <h2 className="font-bold text-xl mb-2">EcomineX-centric approach</h2>
               <p className="text-gray-300">
                 We prioritize understanding their unique needs, providing
                 personalized support, and delivering customised solutions to help

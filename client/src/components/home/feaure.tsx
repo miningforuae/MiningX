@@ -73,7 +73,7 @@ const FeaturesSection = () => {
     },
     {
       icon: Cpu,
-      title: "OVERCLOCKING YOUR BITMAIN MINERS",
+      title: "OVERCLOCKING YOUR BITMAIN EcomineX",
       description: "Advanced firmware optimization and immersion technology expertise to maximize your mining efficiency safely."
     },
     {

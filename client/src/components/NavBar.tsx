@@ -61,7 +61,7 @@ const NavBar = () => {
           <div className="flex items-center justify-between py-7">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2">
-              <span className="text-3xl font-bold">Miner</span>
+              <span className="text-3xl font-bold">Ecomine</span>
               <div className="flex -ml-2 h-8 w-7 items-center justify-center rounded-full bg-green-500">
                 <span className="text-xl font-bold">X</span>
               </div>
@@ -141,7 +141,7 @@ const NavBar = () => {
 
           {/* Center Logo */}
           <Link href="/" className="flex items-center space-x-2 ml-5">
-            <span className="text-3xl font-bold">Miner</span>
+            <span className="text-3xl font-bold">Ecomine</span>
             <div className="flex -ml-2 h-8 w-7 items-center justify-center rounded-full bg-green-500">
               <span className="text-xl font-bold">X</span>
             </div>

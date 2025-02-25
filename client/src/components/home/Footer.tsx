@@ -71,7 +71,7 @@ const Footer = () => {
           {/* Brand Section */}
           <div className="flex flex-col items-start">
             <Link href="/" className="flex items-center space-x-2">
-              <span className="text-3xl font-bold">Miner</span>
+              <span className="text-3xl font-bold">Ecomine</span>
               <div className="-ml-2 flex h-8 w-7 items-center justify-center rounded-full bg-green-500">
                 <span className="text-xl font-bold">X</span>
               </div>
@@ -131,7 +131,7 @@ const Footer = () => {
         <div className="mt-8 border-t border-gray-800 pt-6">
           <div className="flex flex-col items-center justify-between md:flex-row">
             <p className="mb-4 text-sm text-gray-400 md:mb-0">
-              © {new Date().getFullYear()} MinerX Technologies. All Rights
+              © {new Date().getFullYear()} EcomineX Technologies. All Rights
               Reserved.
             </p>
 

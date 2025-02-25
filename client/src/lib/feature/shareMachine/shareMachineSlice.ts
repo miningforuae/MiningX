@@ -15,107 +15,97 @@ interface ShareMachine {
   powerConsumption: number;
   description: string;
   images: string[];
+  isShareBased: boolean;
+  priceRange: number;
+  coinsMined: string;
+  monthlyProfit: number;
 }
 
 interface UserShare {
-  _id: string;
-  machine: ShareMachine;
+  id: string;
+  machineName: string;
   numberOfShares: number;
   pricePerShare: number;
   profitPerShare: number;
   totalInvestment: number;
+  expectedMonthlyProfit: number;
   purchaseDate: string;
   lastProfitUpdate: string;
-  status: 'active' | 'inactive';
+  nextProfitUpdate: string;
 }
 
 interface SharePurchasePayload {
-  machineId: string;
+  userId: string;
   numberOfShares: number;
 }
 
 interface ShareSummary {
-  totalInvestment: number;
-  totalShares: number;
-  totalMonthlyProfit: number;
   shares: UserShare[];
+  summary: {
+    totalShares: number;
+    totalInvestment: number;
+    expectedMonthlyProfit: number;
+  }
+}
+
+interface PurchaseResponse {
+  success: boolean;
+  message: string;
+  data: {
+    purchase: any;
+    transaction: any;
+    newBalance: number;
+    expectedMonthlyProfit: number;
+  }
 }
 
 // Async Thunks
-export const fetchAllShareMachines = createAsyncThunk<
-  ShareMachine[],
-  void,
+export const getSpecialShareMachine = createAsyncThunk<
+  { success: boolean; data: ShareMachine },
+  void, 
   { state: RootState; rejectValue: string }
->('shareMachine/fetchAll', async (_, { rejectWithValue }) => {
+>('shareMachine/getSpecialMachine', async (_, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.get('/api/v1/share-machines');
+    const response = await axiosInstance.get('/api/v1/special-machine');
     return response.data;
   } catch (error: any) {
-    return rejectWithValue(error.response?.data?.message || 'Failed to fetch share machines');
+    return rejectWithValue(error.response?.data?.message || 'Failed to fetch special share machine');
   }
 });
 
-export const getShareMachineDetails = createAsyncThunk<
-  ShareMachine,
+export const getUserShareDetails = createAsyncThunk<
+  { success: boolean; data: ShareSummary },
   string,
   { state: RootState; rejectValue: string }
->('shareMachine/getDetails', async (machineId, { rejectWithValue }) => {
+>('shareMachine/getUserShareDetails', async (userId, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.get(`/api/v1/share-machines/${machineId}`);
-    return response.data;
-  } catch (error: any) {
-    return rejectWithValue(error.response?.data?.message || 'Failed to fetch machine details');
-  }
-});
-
-export const getUserShares = createAsyncThunk<
-  ShareSummary,
-  void,
-  { state: RootState; rejectValue: string }
->('shareMachine/getUserShares', async (_, { rejectWithValue }) => {
-  try {
-    const response = await axiosInstance.get('/api/v1/my-shares');
+    const response = await axiosInstance.get(`/api/v1/user-shares/${userId}`);
     return response.data;
   } catch (error: any) {
     return rejectWithValue(error.response?.data?.message || 'Failed to fetch user shares');
   }
 });
 
-export const purchaseShares = createAsyncThunk<
-  UserShare,
+export const purchaseSpecialShares = createAsyncThunk<
+  PurchaseResponse,
   SharePurchasePayload,
   { state: RootState; rejectValue: string }
->('shareMachine/purchase', async (purchaseData, { rejectWithValue }) => {
+>('shareMachine/purchaseShares', async (purchaseData, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.post('/api/v1/purchase-shares', purchaseData);
+    const response = await axiosInstance.post('/api/v1/purchase', purchaseData);
     return response.data;
   } catch (error: any) {
     return rejectWithValue(error.response?.data?.message || 'Failed to purchase shares');
   }
 });
 
-export const createShareMachine = createAsyncThunk<
-  ShareMachine,
-  FormData,
+export const updateAllShareProfits = createAsyncThunk<
+  { success: boolean; message: string; updatedCount: number; updates: any[] },
+  void,
   { state: RootState; rejectValue: string }
->('shareMachine/create', async (machineData, { rejectWithValue }) => {
+>('shareMachine/updateAllProfits', async (_, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.post('/api/v1/create-share-machine', machineData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-    return response.data;
-  } catch (error: any) {
-    return rejectWithValue(error.response?.data?.message || 'Failed to create share machine');
-  }
-});
-
-export const updateShareProfits = createAsyncThunk<
-  { message: string; updates: any[] },
-  string,
-  { state: RootState; rejectValue: string }
->('shareMachine/updateProfits', async (machineId, { rejectWithValue }) => {
-  try {
-    const response = await axiosInstance.put(`/api/v1/update-profits/${machineId}`);
+    const response = await axiosInstance.post('/api/v1/update-profits');
     return response.data;
   } catch (error: any) {
     return rejectWithValue(error.response?.data?.message || 'Failed to update share profits');
@@ -124,106 +114,105 @@ export const updateShareProfits = createAsyncThunk<
 
 // Slice interface
 interface ShareMachineState {
-  machines: ShareMachine[];
-  selectedMachine: ShareMachine | null;
+  specialMachine: ShareMachine | null;
   userShares: ShareSummary | null;
   loading: boolean;
   error: string | null;
-  lastProfitUpdate: string | null;
+  lastPurchase: PurchaseResponse | null;
+  lastProfitUpdate: {
+    timestamp: string | null;
+    count: number;
+    details: any[] | null;
+  };
 }
 
 const initialState: ShareMachineState = {
-  machines: [],
-  selectedMachine: null,
+  specialMachine: null,
   userShares: null,
   loading: false,
   error: null,
-  lastProfitUpdate: null
+  lastPurchase: null,
+  lastProfitUpdate: {
+    timestamp: null,
+    count: 0,
+    details: null
+  }
 };
 
-// Slice
+// Create the slice
 const shareMachineSlice = createSlice({
   name: 'shareMachine',
   initialState,
   reducers: {
-    clearError: (state) => {
+    clearErrors: (state) => {
       state.error = null;
     },
-    clearSelectedMachine: (state) => {
-      state.selectedMachine = null;
+    clearPurchaseData: (state) => {
+      state.lastPurchase = null;
     }
   },
   extraReducers: (builder) => {
-    builder
-      // fetchAllShareMachines
-      .addCase(fetchAllShareMachines.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchAllShareMachines.fulfilled, (state, action) => {
-        state.loading = false;
-        state.machines = action.payload;
-        state.error = null;
-      })
-      .addCase(fetchAllShareMachines.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || 'Failed to fetch share machines';
-      })
-      // getShareMachineDetails
-      .addCase(getShareMachineDetails.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(getShareMachineDetails.fulfilled, (state, action) => {
-        state.loading = false;
-        state.selectedMachine = action.payload;
-        state.error = null;
-      })
-      .addCase(getShareMachineDetails.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || 'Failed to fetch machine details';
-      })
-      // getUserShares
-      .addCase(getUserShares.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(getUserShares.fulfilled, (state, action) => {
-        state.loading = false;
-        state.userShares = action.payload;
-        state.error = null;
-      })
-      .addCase(getUserShares.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || 'Failed to fetch user shares';
-      })
-      // purchaseShares
-      .addCase(purchaseShares.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(purchaseShares.fulfilled, (state, action) => {
-        state.loading = false;
-        if (state.selectedMachine) {
-          state.selectedMachine.availableShares -= action.payload.numberOfShares;
-        }
-        state.error = null;
-      })
-      .addCase(purchaseShares.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || 'Failed to purchase shares';
-      })
-      // updateShareProfits
-      .addCase(updateShareProfits.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(updateShareProfits.fulfilled, (state, action) => {
-        state.loading = false;
-        state.lastProfitUpdate = new Date().toISOString();
-        state.error = null;
-      })
-      .addCase(updateShareProfits.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || 'Failed to update share profits';
-      });
+    // Get Special Share Machine
+    builder.addCase(getSpecialShareMachine.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(getSpecialShareMachine.fulfilled, (state, action) => {
+      state.loading = false;
+      state.specialMachine = action.payload.data;
+    });
+    builder.addCase(getSpecialShareMachine.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+
+    // Get User Share Details
+    builder.addCase(getUserShareDetails.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(getUserShareDetails.fulfilled, (state, action) => {
+      state.loading = false;
+      state.userShares = action.payload.data;
+    });
+    builder.addCase(getUserShareDetails.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+
+    // Purchase Special Shares
+    builder.addCase(purchaseSpecialShares.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(purchaseSpecialShares.fulfilled, (state, action) => {
+      state.loading = false;
+      state.lastPurchase = action.payload;
+    });
+    builder.addCase(purchaseSpecialShares.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+
+    // Update All Share Profits
+    builder.addCase(updateAllShareProfits.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(updateAllShareProfits.fulfilled, (state, action) => {
+      state.loading = false;
+      state.lastProfitUpdate = {
+        timestamp: new Date().toISOString(),
+        count: action.payload.updatedCount,
+        details: action.payload.updates
+      };
+    });
+    builder.addCase(updateAllShareProfits.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
   }
 });
 
-export const { clearError, clearSelectedMachine } = shareMachineSlice.actions;
+export const { clearErrors, clearPurchaseData } = shareMachineSlice.actions;
 export default shareMachineSlice.reducer;

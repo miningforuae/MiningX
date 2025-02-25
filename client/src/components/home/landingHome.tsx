@@ -11,7 +11,7 @@ function LandingHome() {
       <HeroSection />
       <SolutionCard/>
       <ModernAboutSegments/>
-      <Shop  isHomePage={true}/>
+      <Shop  />
       
     </div>
   );
