@@ -84,7 +84,8 @@ const ShareMachines: React.FC = () => {
             </div>
 
             <button 
-              onClick={() => router.push(`/shares/${specialMachine._id}`)}
+            onClick={() => router.push(`/shop/${specialMachine.machineName.toLowerCase().replace(/\s+/g, "-")}`)}
+
               className="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 p-[1px]"
             >
               <div className="relative flex items-center justify-between rounded-xl bg-zinc-950 px-6 py-3 text-sm font-medium text-white transition-all group-hover:bg-opacity-80">

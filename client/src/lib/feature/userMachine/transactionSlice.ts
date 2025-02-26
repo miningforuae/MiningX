@@ -29,7 +29,7 @@ export const purchaseAndAssignMachine = createAsyncThunk<
   'transaction/purchaseAndAssign',
   async ({ userId, machineId, quantity = 1, machineDetails }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post<PurchaseResponse>('/api/v1/purchase', {
+      const response = await axiosInstance.post<PurchaseResponse>('/api/v1/purchaseMAchine', {
         userId,
         machineId,
         quantity,

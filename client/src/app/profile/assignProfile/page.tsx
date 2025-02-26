@@ -3,6 +3,7 @@
 import LandingLayout from '@/components/Layouts/LandingLayout'
 import UserMachinesDashboard from '@/components/myAccount/assignProfile';
 import DashboardLayout from '@/components/myAccount/layout';
+import UserSharesDashboard from '@/components/myAccount/shareMachine';
 import React from 'react'
 
 function page() {
@@ -11,6 +12,7 @@ function page() {
       <LandingLayout>
         <DashboardLayout>
         <UserMachinesDashboard/>
+        <UserSharesDashboard/>
         </DashboardLayout>
       </LandingLayout>
     </div>

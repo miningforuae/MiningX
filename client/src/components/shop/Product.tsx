@@ -80,8 +80,9 @@ const Shop: React.FC<ShopProps> = ({
             </div>
 
             <button 
-              onClick={() => router.push(`/shop/${product.machineName.toLowerCase().replace(/\s+/g, "-")}`)}
-              className="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-green-500 to-blue-500 p-[1px]"
+onClick={() => router.push(`/shop/${product.machineName.toLowerCase().replace(/\s+/g, "-")}`)}
+
+className="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-green-500 to-blue-500 p-[1px]"
             >
               <div className="relative flex items-center justify-between rounded-xl bg-zinc-950 px-6 py-3 text-sm font-medium text-white transition-all group-hover:bg-opacity-80">
                 View Details
