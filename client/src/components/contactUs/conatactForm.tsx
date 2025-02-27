@@ -95,7 +95,7 @@ const ContactForm = () => {
   useEffect(() => {
     const detectCountry = async () => {
       try {
-        const response = await fetch('http://ip-api.com/json');
+        const response = await fetch('https://ip-api.com/json');
         const data = await response.json();
         const countryOption = countryOptions.find(option => 
           option.value === data.countryCode
