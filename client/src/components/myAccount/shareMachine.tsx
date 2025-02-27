@@ -83,9 +83,9 @@ const UserSharesDashboard = () => {
     return (
       <div className="group relative overflow-hidden rounded-2xl border border-zinc-800 bg-black transition-all duration-500 hover:border-[#21eb00] hover:shadow-lg hover:shadow-[#21eb00]/10">
         <div className="absolute right-0 top-0 z-10 rounded-bl-lg bg-[#21eb00] px-3 py-1">
-          <span className="text-sm font-bold text-black">
+          {/* <span className="text-sm font-bold text-black">
             {((share.profitPerShare / share.pricePerShare) * 100).toFixed(1)}%
-          </span>
+          </span> */}
         </div>
         <div className="absolute inset-0 bg-gradient-to-br from-[#21eb00]/5 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
