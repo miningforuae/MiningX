@@ -102,7 +102,7 @@ const UserBalanceUpdate: React.FC<UserBalanceUpdateProps> = ({ userId, userName 
                 </span>
               </p>
               <p className="flex items-center justify-between">
-                <span>Mining Balance:</span> 
+                <span>Mining Profit:</span> 
                 <span className="font-medium text-green-300">
                   {formatCurrency(balanceData?.miningBalance || balanceData?.balances?.miningBalance || balanceData?.balances?.mining || 0)}
                 </span>

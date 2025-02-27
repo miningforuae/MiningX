@@ -9,33 +9,41 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { DollarSign, AlertCircle, Wallet } from "lucide-react";
+import { DollarSign, AlertCircle, Wallet, PieChart } from "lucide-react";
 
 const PurchaseConfirmationModal = ({
   isOpen,
   onClose,
-  onConfirm,  // This is the function from parent
+  onConfirm,
   product,
   quantity,
   balances,
   isProcessing,
+  isShareMachine = false,
+  sharePrice,
+  profitPerShare
 }) => {
-  const totalCost = product.priceRange * quantity;
+  // Calculate total cost based on machine type
+  const totalCost = isShareMachine 
+    ? sharePrice * quantity 
+    : product.priceRange * quantity;
+    
   const hasEnoughBalance = balances?.total >= totalCost;
   console.log("Modal Balance Data:", balances);
 
   const handleConfirmClick = () => {
     console.log("Confirm button clicked"); // Debug log
     if (onConfirm) {
-      onConfirm();  // Call the parent function
+      onConfirm();
     }
   };
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="border border-gray-800 bg-gray-900 text-white">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">
-            Confirm Purchase
+            {isShareMachine ? "Confirm Share Purchase" : "Confirm Purchase"}
           </DialogTitle>
         </DialogHeader>
 
@@ -56,21 +64,66 @@ const PurchaseConfirmationModal = ({
           </div>
 
           {/* Purchase Details */}
-          <div className="space-y-3 rounded-lg bg-gray-800/60 p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-300">Machine:</span>
-              <span className="font-medium">{product.machineName}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-300">Quantity:</span>
-              <span className="font-medium">{quantity}</span>
-            </div>
-            <div className="flex items-center justify-between border-t border-gray-700 pt-2 text-lg">
-              <span className="text-gray-300">Total Cost:</span>
-              <span className="font-bold text-green-400">
-                ${totalCost.toLocaleString()}
-              </span>
-            </div>
+          <div className={`space-y-3 rounded-lg ${isShareMachine ? 'bg-purple-900/20' : 'bg-gray-800/60'} p-4`}>
+            {isShareMachine ? (
+              <>
+                {/* Share Machine Display */}
+                <div className="flex items-center mb-2">
+                  <PieChart className="mr-2 h-5 w-5 text-purple-400" />
+                  <span className="font-medium text-purple-300">Share-Based Mining</span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">Share Machine:</span>
+                  <span className="font-medium">{product.machineName}</span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">Share Price:</span>
+                  <span className="font-medium">${sharePrice.toLocaleString()}</span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">Number of Shares:</span>
+                  <span className="font-medium">{quantity}</span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">Profit Per Share:</span>
+                  <span className="font-medium text-purple-400">${profitPerShare}</span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">Expected Monthly Profit:</span>
+                  <span className="font-medium text-purple-400">${(profitPerShare * quantity).toFixed(2)}</span>
+                </div>
+                
+                <div className="flex items-center justify-between border-t border-gray-700 pt-2 text-lg">
+                  <span className="text-gray-300">Total Cost:</span>
+                  <span className="font-bold text-purple-400">
+                    ${totalCost.toLocaleString()}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Normal Machine Display */}
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">Machine:</span>
+                  <span className="font-medium">{product.machineName}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">Quantity:</span>
+                  <span className="font-medium">{quantity}</span>
+                </div>
+                <div className="flex items-center justify-between border-t border-gray-700 pt-2 text-lg">
+                  <span className="text-gray-300">Total Cost:</span>
+                  <span className="font-bold text-green-400">
+                    ${totalCost.toLocaleString()}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
 
           {!hasEnoughBalance && (
@@ -81,7 +134,7 @@ const PurchaseConfirmationModal = ({
                 <p className="text-red-300 text-sm">
                   You need $
                   {(totalCost - (balances?.total || 0)).toLocaleString()} more
-                  to complete this purchase.
+                  to complete this {isShareMachine ? "share purchase" : "purchase"}.
                 </p>
               </div>
             </div>
@@ -97,12 +150,12 @@ const PurchaseConfirmationModal = ({
             Cancel
           </Button>
           <Button
-          onClick={handleConfirmClick}  // Use the handler function
-          disabled={!hasEnoughBalance || isProcessing}
-          className="bg-green-600 hover:bg-green-700 text-white"
-        >
-          {isProcessing ? 'Processing...' : 'Confirm Purchase'}
-        </Button>
+            onClick={handleConfirmClick}
+            disabled={!hasEnoughBalance || isProcessing}
+            className={`${isShareMachine ? 'bg-purple-600 hover:bg-purple-700' : 'bg-green-600 hover:bg-green-700'} text-white`}
+          >
+            {isProcessing ? 'Processing...' : isShareMachine ? 'Confirm Share Purchase' : 'Confirm Purchase'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -131,7 +131,7 @@ const DashboardHero = () => {
     },
     {
       icon: Coins,
-      title: "Mining Balance",
+      title: "Mining Profit",
       value: `$${balance?.balances?.mining?.toLocaleString() || '0'}`,
       subtitle: "Mining earnings",
       path: "/profile/assignProfile",

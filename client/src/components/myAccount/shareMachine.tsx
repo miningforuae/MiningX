@@ -32,26 +32,32 @@ const UserSharesDashboard = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user?.email || !isAuthenticated) {
+      // Log the user object to see its structure
+      console.log("User object:", user);
+      
+      // Check if user exists and has an _id property
+      if (!user?.id ) {
+        console.log("User ID is missing or user not authenticated");
         setProfitLoading(false);
         return;
       }
-
+  
       try {
         setError(null);
         setProfitLoading(true);
         
-        // Fetch user shares data
-        await dispatch(getUserShareDetails(user.email)).unwrap();
+        console.log("Fetching data for user ID:", user.id);
+        // Pass user._id instead of user.email
+        await dispatch(getUserShareDetails(user.id)).unwrap();
         
-        // Set loading state to false
         setProfitLoading(false);
       } catch (err) {
+        console.error("Error in fetchData:", err);
         setError(err.message || "Failed to fetch data");
         setProfitLoading(false);
       }
     };
-
+  
     fetchData();
   }, [dispatch, user, isAuthenticated]);
 
