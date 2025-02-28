@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Bitcoin } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 const MiningHeroSlider = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -148,10 +149,10 @@ const MiningHeroSlider = () => {
 
             {/* CTA Button */}
             <button className="group relative overflow-hidden rounded-full bg-green-500 px-8 py-4 text-white transition-all hover:bg-green-600">
-              <span className="relative z-10 flex items-center justify-center space-x-2">
+              <Link className="relative z-10 flex items-center justify-center space-x-2 " href='/auth/signin'>
                 {/* <Bitcoin className="h-5 w-5" /> */}
                 <span>Start Mining Bitcoin Now</span>
-              </span>
+              </Link>
               <div className="absolute inset-0 -translate-x-full transform bg-green-400 transition-transform group-hover:translate-x-0" />
             </button>
 

@@ -7,7 +7,6 @@ import { useGetAllMiningMachinesQuery } from "@/lib/feature/Machines/miningMachi
 import {
   ChevronLeft,
   ShoppingCart,
-  Heart,
   Bolt,
   Zap,
   CreditCard,
@@ -19,7 +18,7 @@ import {
   PieChart,
 } from "lucide-react";
 import Link from "next/link";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import LandingLayout from "@/components/Layouts/LandingLayout";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
@@ -230,6 +229,18 @@ const ProductDetails = ({ params }) => {
   
   return (
     <LandingLayout>
+<ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="dark"
+        />
       <div className="min-h-screen bg-gradient-to-b from-primary to-primary/95 text-white">
         <div className="container mx-auto px-4 py-8">
           {/* Back Navigation */}
@@ -347,10 +358,7 @@ const ProductDetails = ({ params }) => {
                       <span>Total Shares:</span>
                       <span className="font-medium">{product.totalShares}</span>
                     </div>
-                    <div className="flex justify-between p-3 rounded-lg bg-gray-700/30">
-                      <span>Available Shares:</span>
-                      <span className="font-medium text-purple-400">{availableShares}</span>
-                    </div>
+                
                     <div className="flex justify-between p-3 rounded-lg bg-gray-700/30">
                       <span>Profit per share (monthly):</span>
                       <span className="font-medium text-purple-400">${profitPerShare}</span>
@@ -388,9 +396,7 @@ const ProductDetails = ({ params }) => {
                     {isShareMachine ? "Buy Shares" : "Buy Now"}
                   </span>
                 </button>
-                <button className="rounded-xl bg-gray-700/30 p-4 transition-colors hover:bg-gray-700/50">
-                  <Heart className="h-6 w-6" />
-                </button>
+               
               </div>
 
               {/* Technical Specifications */}
@@ -428,7 +434,6 @@ const ProductDetails = ({ params }) => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 rounded-xl bg-gray-700/30 p-4 transition-colors hover:bg-gray-700/40">
-                    <Heart className="text-red-400 h-8 w-8" />
                     <div>
                       <p className="text-sm text-gray-400">Coins Mined</p>
                       <p className="font-medium">{product.coinsMined}</p>

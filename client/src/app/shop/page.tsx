@@ -8,8 +8,9 @@ function page() {
     <LandingLayout>
       <div className="bg-primary">
         {" "}
-        <ShopHero />
         <Shop />
+        <ShopHero />
+
       </div>
     </LandingLayout>
   );

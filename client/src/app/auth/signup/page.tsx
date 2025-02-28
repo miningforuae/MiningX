@@ -38,7 +38,8 @@ export default function RegisterPage() {
   const countryOptions = getCountries().map(country => ({
     value: country,
     label: `${new Intl.DisplayNames(['en'], { type: 'region' }).of(country)} (+${getCountryCallingCode(country)})`,
-    dialCode: getCountryCallingCode(country)
+    dialCode: getCountryCallingCode(country),
+    fullName: new Intl.DisplayNames(['en'], { type: 'region' }).of(country)
   }));
 
   // Custom styles for react-select to match the dark theme
@@ -158,6 +159,7 @@ export default function RegisterPage() {
         email, 
         password, 
         country: selectedCountry.value,
+        countryName: selectedCountry.fullName,
         phoneNumber: formattedPhone
       }).unwrap();
       toast.success("Registration successful!");

@@ -80,9 +80,8 @@ const Shop: React.FC<ShopProps> = ({
             </div>
 
             <button 
-onClick={() => router.push(`/shop/${product.machineName.toLowerCase().replace(/\s+/g, "-")}`)}
-
-className="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-green-500 to-blue-500 p-[1px]"
+              onClick={() => router.push(`/shop/${product.machineName.toLowerCase().replace(/\s+/g, "-")}`)}
+              className="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-green-500 to-blue-500 p-[1px]"
             >
               <div className="relative flex items-center justify-between rounded-xl bg-zinc-950 px-6 py-3 text-sm font-medium text-white transition-all group-hover:bg-opacity-80">
                 View Details
@@ -138,7 +137,7 @@ className="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-gree
 
   return (
     <div className="min-h-screen bg-zinc-950">
-      <div className="container px-4 py-12">
+      <div className="mx-auto max-w-7xl px-4 py-12">
         <div className="relative mb-16 text-center">
           <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-gradient-to-r from-transparent via-green-500 to-transparent" />
           <h1 className="relative inline-block bg-zinc-950 px-8 text-4xl font-bold text-white">
@@ -168,20 +167,6 @@ className="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-gree
           ))}
         </div>
         <ShareMachines/>
-
-        {/* {isHomePage && displayProducts.length > 0 && (
-          <div className="mt-16 text-center">
-            <button
-              onClick={() => router.push('/shop')}
-              className="group relative inline-flex items-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-green-500 to-blue-500 p-[1px]"
-            >
-              <span className="relative rounded-xl bg-zinc-950 px-8 py-4 text-lg font-semibold text-white transition-all group-hover:bg-opacity-80">
-                View All Machines
-                <ArrowRight className="ml-2 inline-block h-5 w-5 transition-transform group-hover:translate-x-1" />
-              </span>
-            </button>
-          </div>
-        )} */}
       </div>
     </div>
   );

@@ -1,8 +1,8 @@
 "use client";
 import React from 'react';
-import { ArrowRight, Phone, Server, Truck, Wrench, ChartBar } from 'lucide-react';
+import { ArrowRight, Phone, Server, Truck, Wrench, ChartBar, Sun } from 'lucide-react';
 
-const ImprovedHowItWorksSection = () => {
+const HowItWorksSection = () => {
   const steps = [
     {
       number: "01",
@@ -38,8 +38,27 @@ const ImprovedHowItWorksSection = () => {
       description: "Now, relax and keep track of your machines' performance with our real-time interactive dashboard.",
       icon: ChartBar,
       delay: "400"
+    },
+    {
+      number: "06",
+      title: "You Have Solar Form",
+      description: "Maximize efficiency and sustainability by integrating solar energy into your mining operations with our customized solutions.",
+      icon: Sun,
+      delay: "500"
     }
   ];
+
+  // WhatsApp handler
+  const openWhatsApp = () => {
+    // Replace with your phone number in international format
+    const phoneNumber = "123456789";
+    // Optional pre-filled message
+    const message = "Hi, I'd like to talk to an expert about mining equipment.";
+    // Create the WhatsApp URL
+    const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    // Open WhatsApp in a new tab
+    window.open(whatsappURL, '_blank');
+  };
 
   return (
     <div className="relative w-full bg-[#101010] px-6 py-20">
@@ -71,9 +90,9 @@ const ImprovedHowItWorksSection = () => {
 
       <div className="relative mx-auto max-w-7xl">
         {/* Header Section */}
-        <div className="mb-24 flex items-center justify-between">
+        <div className="mb-24 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div className="relative">
-            <h2 className="text-6xl font-bold">
+            <h2 className="text-4xl md:text-6xl font-bold">
               <span className="text-white">How it </span>
               <span className="bg-gradient-to-r from-green-500 to-green-300 bg-clip-text text-transparent">
                 works
@@ -82,7 +101,10 @@ const ImprovedHowItWorksSection = () => {
             <div className="mt-4 h-1 w-24 bg-green-500" />
           </div>
 
-          <button className="group relative overflow-hidden rounded-full bg-green-500 md:px-8 md:py-4 px-4 py-3 text-lg font-medium text-white transition-all hover:bg-green-600">
+          <button 
+            onClick={openWhatsApp}
+            className="group relative overflow-hidden rounded-full bg-green-500 w-full md:w-auto px-6 py-3 text-lg font-medium text-white transition-all hover:bg-green-600 flex items-center justify-center"
+          >
             <span className="relative z-10 flex items-center space-x-2">
               <span>Talk to an expert</span>
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -129,6 +151,16 @@ const ImprovedHowItWorksSection = () => {
         </div>
       </div>
 
+      {/* Fixed Mobile WhatsApp Button */}
+      <div className="md:hidden fixed bottom-6 right-6 z-50">
+        <button 
+          onClick={openWhatsApp}
+          className="flex items-center justify-center p-4 bg-green-500 rounded-full shadow-lg hover:bg-green-600 transition-colors"
+        >
+          <Phone className="h-6 w-6 text-white" />
+        </button>
+      </div>
+
       <style jsx>{`
         @keyframes floatHexagon {
           0% { transform: translate(0, 0) rotate(0deg); }
@@ -151,4 +183,4 @@ const ImprovedHowItWorksSection = () => {
   );
 };
 
-export default ImprovedHowItWorksSection;
+export default HowItWorksSection;

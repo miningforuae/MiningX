@@ -66,12 +66,12 @@ const ShareMachines: React.FC = () => {
                 </span>
               </div>
 
-              <div className="flex items-center justify-between rounded-xl bg-blue-500/10 p-3 backdrop-blur-sm">
+              {/* <div className="flex items-center justify-between rounded-xl bg-blue-500/10 p-3 backdrop-blur-sm">
                 <span className="text-sm text-blue-300">Available Shares</span>
                 <span className="font-mono text-lg font-bold text-blue-400">
                   {specialMachine.availableShares}/{specialMachine.totalShares}
                 </span>
-              </div>
+              </div> */}
             </div>
 
             <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-800">
@@ -155,15 +155,7 @@ const ShareMachines: React.FC = () => {
         </div>
 
         <div className="mt-12 text-center">
-          <button
-            onClick={() => router.push('/share-program')}
-            className="group relative inline-flex items-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 p-[1px]"
-          >
-            <span className="relative rounded-xl bg-zinc-950 px-8 py-4 text-lg font-semibold text-white transition-all group-hover:bg-opacity-80">
-              Learn More About Share Mining
-              <ArrowRight className="ml-2 inline-block h-5 w-5 transition-transform group-hover:translate-x-1" />
-            </span>
-          </button>
+     
         </div>
       </div>
     </div>
