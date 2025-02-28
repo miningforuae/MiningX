@@ -43,24 +43,24 @@ export const AdminNavbar = () => {
       <header className="hidden w-full flex-col bg-black md:block">
         <nav className="mx-1  items-center justify-between rounded-2xl bg-gray-800 px-6 py-3 shadow-sm md:mx-11 md:flex">
           <div className="flex space-x-3 md:space-x-9">
-            <Link
+            {/* <Link
               href="/ProductTable"
               className="font-semibold text-[#21eb00] hover:underline"
             >
               All Product{" "}
-            </Link>
+            </Link> */}
             <Link
               href="/AllUser"
               className="text-gray-300 hover:text-[#21eb00]"
             >
               All User
             </Link>
-            <Link
+            {/* <Link
               href="/ProductUpload"
               className="text-gray-300 hover:text-[#21eb00]"
             >
               Add Machine{" "}
-            </Link>
+            </Link> */}
             <Link href="/Assign" className="text-gray-300 hover:text-[#21eb00]">
               Assign Machine{" "}
             </Link>
@@ -76,13 +76,14 @@ export const AdminNavbar = () => {
             >
               All Transaction{" "}
             </Link>
-          </div>
-          <Link
+            <Link
               href="/contactUs/admin"
               className="text-gray-300 hover:text-[#21eb00]"
             >
               All Contact{" "}
             </Link>
+          </div>
+         
           <button
             onClick={() => console.log("Logout clicked")}
             className="flex items-center space-x-2 text-[#21eb00] hover:text-green-400"
