@@ -1,16 +1,19 @@
 // @ts-nocheck
+
 "use client";
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  User,
+  Cpu,
+  DollarSign,
+  History,
   Mail,
+  Phone,
+  MapPin,
   Calendar,
   ArrowLeft,
-  Activity,
-  ArrowUpRight,
-  ArrowDownLeft,
-  Shield,
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,65 +27,53 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useUsers } from "@/hooks/Userdetail";
+
 import {
   fetchUserMachines,
   fetchUserTotalProfit,
+  fetchUserTransactions,
 } from "@/lib/feature/userMachine/usermachineApi";
 import { AppDispatch } from "@/lib/store/store";
-import { fetchUserWithdrawals } from "@/lib/feature/withdraw/withdrawalSlice";
-import LandingLayout from "@/components/Layouts/LandingLayout";
+import { useUsers } from "@/hooks/Userdetail";
+
+interface RootState {
+  userMachine: {
+    userMachines: any[];
+    userProfit: {
+      totalProfit: number;
+    };
+    transactions: {
+      transactions: any[];
+      totalTransactions: number;
+    };
+    isLoading: boolean;
+  };
+}
 
 const UserDetailsPage = () => {
   const { userId } = useParams();
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 10;
 
+  const [activeTab, setActiveTab] = useState("overview");
   const {
     userMachines = [],
+    userProfit = { totalProfit: 0 },
+    transactions = { transactions: [], totalTransactions: 0 },
     isLoading,
   } = useSelector((state: RootState) => state.userMachine);
 
   const { users } = useUsers();
   const currentUser = users?.find((user) => user._id === userId) || null;
+  console.log("🚀 ~ UserDetailsPage ~ currentUser:", currentUser);
 
   useEffect(() => {
     if (userId) {
       dispatch(fetchUserMachines(userId));
+      dispatch(fetchUserTotalProfit(userId));
+      dispatch(fetchUserTransactions({ userIdentifier: userId }));
     }
   }, [dispatch, userId]);
-
-  const {
-    withdrawals = [],
-    pagination,
-  } = useSelector((state: RootState) => state.withdrawal);
-
-  useEffect(() => {
-    if (currentUser?.email) {
-      dispatch(
-        fetchUserWithdrawals({
-          email: currentUser.email,
-          page: currentPage,
-          limit: ITEMS_PER_PAGE,
-        })
-      );
-    }
-  }, [currentUser?.email, dispatch, currentPage]);
-
-  const handleRefresh = () => {
-    if (currentUser?.email) {
-      dispatch(
-        fetchUserWithdrawals({
-          email: currentUser.email,
-          page: currentPage,
-          limit: ITEMS_PER_PAGE,
-        })
-      );
-    }
-  };
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString("en-US", {
@@ -92,49 +83,11 @@ const UserDetailsPage = () => {
     });
   };
 
-  const formatDateTime = (dateString) => {
-    return new Date(dateString).toLocaleString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
-
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
     }).format(amount);
-  };
-
-  const StatusBadge = ({ status }) => {
-    const styles = {
-      active: "bg-green-500/10 text-green-400 border border-green-500/20",
-      inactive: "bg-red-500/10 text-red-400 border border-red-500/20",
-      pending: "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20",
-      completed: "bg-green-500/10 text-green-400 border border-green-500/20",
-      failed: "bg-red-500/10 text-red-400 border border-red-500/20",
-      processing: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
-    };
-
-    return (
-      <span
-        className={`rounded-full px-3 py-1 text-xs font-medium ${styles[status.toLowerCase()]}`}
-      >
-        {status}
-      </span>
-    );
-  };
-
-  const TransactionTypeIcon = ({ type }) => {
-    return type.toLowerCase() === 'withdrawal' ? (
-      <ArrowUpRight className="h-4 w-4 text-red-400" />
-    ) : (
-      <ArrowDownLeft className="h-4 w-4 text-green-400" />
-    );
   };
 
   if (isLoading) {
@@ -146,202 +99,247 @@ const UserDetailsPage = () => {
   }
 
   return (
-    <LandingLayout>
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 p-6 text-gray-50">
-        <div className="mx-auto max-w-7xl">
-          <Button
-            onClick={() => router.back()}
-            variant="ghost"
-            className="mb-6 text-gray-300 hover:bg-gray-800/50 hover:text-white"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
+    <div className="min-h-screen bg-gray-950 p-6 text-gray-50">
+      <Button
+        onClick={() => router.back()}
+        variant="ghost"
+        className="mb-6 text-gray-300 hover:bg-gray-800/50 hover:text-white"
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Back to Users
+      </Button>
 
-          {/* Profile Header */}
-          <Card className="mb-8 border-gray-800 bg-gray-900/50 backdrop-blur-lg">
-            <CardContent className="pt-6">
-              <div className="flex flex-col space-y-4">
-                <h1 className="text-3xl font-bold text-white">
-                  {currentUser?.firstName} {currentUser?.lastName}
-                </h1>
-                <div className="flex flex-wrap gap-4">
-                  <div className="flex items-center space-x-2 text-gray-400">
-                    <Mail className="h-4 w-4" />
-                    <span>{currentUser?.email}</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-gray-400">
-                    <Calendar className="h-4 w-4" />
-                    <span>Joined {formatDate(currentUser?.createdAt)}</span>
-                  </div>
+      {/* User Profile Header */}
+      <Card className="mb-6 border-gray-700/50 bg-gray-800/90 shadow-xl">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-4">
+            <div className="rounded-full bg-blue-500/20 p-3">
+              <User className="h-8 w-8 text-blue-400" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-white">
+                {currentUser?.firstName} {currentUser?.lastName}
+              </h1>
+              <p className="text-sm text-gray-300">User Profile</p>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="flex items-center space-x-2 rounded-lg bg-gray-700/30 p-3 text-gray-100">
+              <Mail className="h-4 w-4 text-blue-400" />
+              <span>{currentUser?.email}</span>
+            </div>
+            <div className="flex items-center space-x-2 rounded-lg bg-gray-700/30 p-3 text-gray-100">
+              <Phone className="h-4 w-4 text-blue-400" />
+              <span>{currentUser?.phoneNumber || "N/A"}</span>
+            </div>
+            <div className="flex items-center space-x-2 rounded-lg bg-gray-700/30 p-3 text-gray-100">
+              <MapPin className="h-4 w-4 text-blue-400" />
+              <span>{currentUser?.country || "N/A"}</span>
+            </div>
+            <div className="flex items-center space-x-2 rounded-lg bg-gray-700/30 p-3 text-gray-100">
+              <Calendar className="h-4 w-4 text-blue-400" />
+              <span>Joined {formatDate(currentUser?.createdAt)}</span>
+            </div>
+            {/* <div className="flex items-center space-x-2 rounded-lg bg-gray-700/30 p-3 text-gray-100">
+              <span className="h-4 w-4 text-blue-400">Role:</span>
+              <span>{currentUser?.role || "N/A"}</span>
+            </div> */}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Tabs Navigation */}
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList className="border-gray-700 bg-gray-800/90">
+          <TabsTrigger
+            className="text-gray-100 data-[state=active]:bg-gray-700 data-[state=active]:text-white"
+            value="overview"
+          >
+            Overview
+          </TabsTrigger>
+          <TabsTrigger
+            className="text-gray-100 data-[state=active]:bg-gray-700 data-[state=active]:text-white"
+            value="machines"
+          >
+            Machines
+          </TabsTrigger>
+          <TabsTrigger
+            className="text-gray-100 data-[state=active]:bg-gray-700 data-[state=active]:text-white"
+            value="transactions"
+          >
+            Transactions
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Overview Tab */}
+        <TabsContent value="overview">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <Card className="border-gray-700/50 bg-gray-800/90 shadow-lg hover:bg-gray-800">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 text-gray-100">
+                  <Cpu className="h-4 w-4 text-blue-400" />
+                  <span>Total Machines</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-white">
+                  {userMachines?.length || 0}
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-gray-700/50 bg-gray-800/90 shadow-lg hover:bg-gray-800">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 text-gray-100">
+                  <DollarSign className="h-4 w-4 text-blue-400" />
+                  <span>Total Profit</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-green-400">
+                  {formatCurrency(userProfit?.totalProfit || 0)}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-gray-700/50 bg-gray-800/90 shadow-lg hover:bg-gray-800">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 text-gray-100">
+                  <History className="h-4 w-4 text-blue-400" />
+                  <span>Total Transactions</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-white">
+                  {transactions?.totalTransactions || 0}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Machines Tab */}
+        <TabsContent value="machines">
+          <Card className="border-gray-700/50 bg-gray-800/90 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-gray-100">Assigned Machines</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-gray-700 bg-gray-900/50">
+                    <TableHead className="text-gray-300">
+                      Machine Name
+                    </TableHead>
+                    <TableHead className="text-gray-300">Model</TableHead>
+                    <TableHead className="text-gray-300">
+                      Assigned Date
+                    </TableHead>
+                    <TableHead className="text-gray-300">Status</TableHead>
+                    <TableHead className="text-gray-300">
+                      Current Profit
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {userMachines?.map((machine) => (
+                    <TableRow
+                      key={machine._id}
+                      className="border-gray-700/50 text-gray-100 hover:bg-gray-700/50"
+                    >
+                      <TableCell>{machine.machine.machineName}</TableCell>
+                      <TableCell>{machine.machine.model}</TableCell>
+                      <TableCell>{formatDate(machine.assignedDate)}</TableCell>
+                      <TableCell>
+                        <span
+                          className={`rounded-full px-2 py-1 text-xs font-semibold
+                          ${
+                            machine.status === "active"
+                              ? "bg-green-500/20 text-green-400"
+                              : "bg-red-500/20 text-red-400"
+                          }`}
+                        >
+                          {machine.status}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-green-400">
+                        {formatCurrency(machine.monthlyProfitAccumulated)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
+        </TabsContent>
 
-          {/* Tabs */}
-          <Tabs defaultValue="machines" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 rounded-lg border border-gray-800 bg-gray-900/50 p-1">
-              <TabsTrigger
-                value="machines"
-                className="text-gray-400 data-[state=active]:bg-gray-800 data-[state=active]:text-white"
-              >
-                Machines
-              </TabsTrigger>
-              <TabsTrigger
-                value="transactions"
-                className="text-gray-400 data-[state=active]:bg-gray-800 data-[state=active]:text-white"
-              >
-                Transactions
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="machines">
-              <Card className="border-gray-800 bg-gray-900/50">
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Shield className="h-5 w-5 text-blue-400" />
-                    <span className="text-white">Assigned Machines</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ScrollArea className="h-[400px] rounded-md">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="border-gray-800 bg-gray-950/50">
-                          <TableHead className="text-gray-400">Machine</TableHead>
-                          <TableHead className="text-gray-400">Date</TableHead>
-                          <TableHead className="text-gray-400">Status</TableHead>
-                          <TableHead className="text-gray-400">Profit</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {userMachines?.map((machine) => (
-                          <TableRow
-                            key={machine._id}
-                            className="border-gray-800 text-gray-300 transition-colors hover:bg-gray-800/50"
-                          >
-                            <TableCell className="font-medium">
-                              {machine?.machine?.machineName}
-                            </TableCell>
-                            <TableCell>
-                              {formatDate(machine?.assignedDate)}
-                            </TableCell>
-                            <TableCell>
-                              <StatusBadge status={machine?.status} />
-                            </TableCell>
-                            <TableCell className="font-medium text-green-400">
-                              {formatCurrency(machine?.monthlyProfitAccumulated)}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </ScrollArea>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="transactions">
-              <Card className="border-gray-800 bg-gray-900/50">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-3">
-                      <Activity className="h-5 w-5 text-blue-400" />
-                      <span>Transaction History</span>
-                    </CardTitle>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleRefresh}
-                      disabled={isLoading}
-                      className="border-gray-700 bg-gray-800/50 text-gray-300 hover:bg-gray-700 hover:text-white"
+        {/* Transactions Tab */}
+        <TabsContent value="transactions">
+          <Card className="border-gray-700/50 bg-gray-800/90 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-gray-100">
+                Transaction History
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-gray-700 bg-gray-900/50">
+                    <TableHead className="text-gray-300">Date</TableHead>
+                    <TableHead className="text-gray-300">Type</TableHead>
+                    <TableHead className="text-gray-300">Amount</TableHead>
+                    <TableHead className="text-gray-300">Status</TableHead>
+                    <TableHead className="text-gray-300">Details</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {transactions?.transactions?.map((transaction) => (
+                    <TableRow
+                      key={transaction._id}
+                      className="border-gray-700/50 text-gray-100 hover:bg-gray-700/50"
                     >
-                      {isLoading ? 'Refreshing...' : 'Refresh'}
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <ScrollArea className="h-[400px] rounded-md">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="border-gray-800 bg-gray-950/50">
-                          <TableHead className="text-gray-400">Date & Time</TableHead>
-                          <TableHead className="text-gray-400">Type</TableHead>
-                          <TableHead className="text-gray-400 text-right">Amount</TableHead>
-                          <TableHead className="text-gray-400">Status</TableHead>
-                          <TableHead className="text-gray-400">Details</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {withdrawals.map((transaction) => (
-                          <TableRow
-                            key={transaction._id}
-                            className="border-gray-800 text-gray-300 transition-colors hover:bg-gray-800/40"
-                          >
-                            <TableCell className="font-medium">
-                              {formatDateTime(transaction.transactionDate)}
-                            </TableCell>
-                            <TableCell>
-                              <span className="flex items-center gap-2">
-                                <TransactionTypeIcon type={transaction.type || 'withdrawal'} />
-                                <span className="capitalize">{transaction.type || 'Withdrawal'}</span>
-                              </span>
-                            </TableCell>
-                            <TableCell className="text-right font-medium">
-                              <span className={transaction.type?.toLowerCase() === 'deposit' ? 'text-green-400' : 'text-red-400'}>
-                                {formatCurrency(transaction.amount)}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <StatusBadge status={transaction.status} />
-                            </TableCell>
-                            <TableCell className="text-gray-400">
-                              {transaction.description || 'Withdrawal request'}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </ScrollArea>
-
-                  {pagination && withdrawals?.length > 0 && (
-                    <div className="mt-6 flex items-center justify-between border-t border-gray-800 px-2 pt-4">
-                      <div className="text-sm text-gray-400">
-                        Showing {withdrawals.length} of {pagination.totalWithdrawals} transactions
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                          disabled={currentPage === 1}
-                          className="text-gray-400 hover:bg-gray-800 hover:text-white disabled:opacity-50"
+                      <TableCell>
+                        {formatDate(transaction.transactionDate)}
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`rounded-full px-2 py-1 text-xs font-semibold
+                          ${
+                            transaction.type === "withdrawal"
+                              ? "bg-blue-500/20 text-blue-400"
+                              : "bg-green-500/20 text-green-400"
+                          }`}
                         >
-                          Previous
-                        </Button>
-                        <span className="text-sm text-gray-400">
-                          Page {currentPage} of {pagination.totalPages}
+                          {transaction.type}
                         </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setCurrentPage(prev => Math.min(pagination.totalPages, prev + 1))}
-                          disabled={currentPage === pagination.totalPages}
-                          className="text-gray-400 hover:bg-gray-800 hover:text-white disabled:opacity-50"
+                      </TableCell>
+                      <TableCell className="text-green-400">
+                        {formatCurrency(transaction.amount)}
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`rounded-full px-2 py-1 text-xs font-semibold
+                          ${
+                            transaction.status === "completed"
+                              ? "bg-green-500/20 text-green-400"
+                              : "bg-yellow-500/20 text-yellow-400"
+                          }`}
                         >
-                          Next
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
-    </LandingLayout>
+                          {transaction.status}
+                        </span>
+                      </TableCell>
+                      <TableCell>{transaction.details}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 

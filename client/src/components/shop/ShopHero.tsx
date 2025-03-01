@@ -1,12 +1,13 @@
-import React from 'react';
-import { CircuitBoard, Cpu, Gauge, Zap } from 'lucide-react';
+import React from "react";
+import { CircuitBoard, Cpu, Gauge, Zap } from "lucide-react";
+import Link from "next/link";
 
 const HeroSection = () => {
   return (
-    <div className="relative bg-primary min-h-[90vh] overflow-hidden">
+    <div className="relative min-h-[90vh] overflow-hidden bg-primary">
       {/* Animated background grid */}
       <div className="absolute inset-0 opacity-10">
-        <div className="grid grid-cols-12 h-full w-full">
+        <div className="grid h-full w-full grid-cols-12">
           {[...Array(144)].map((_, i) => (
             <div key={i} className="border border-white/10" />
           ))}
@@ -30,42 +31,47 @@ const HeroSection = () => {
       </div>
 
       {/* Main content */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
+      <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-20 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h1 className="text-2xl md:text-5xl font-bold text-white mb-6 tracking-tight">
+          <h1 className="mb-6 text-2xl font-bold tracking-tight text-white md:text-5xl">
             Power Your Future with
-            <span className="bg-secondary 400 text-transparent bg-clip-text"> Mining Excellence</span>
+            <span className="400 bg-secondary bg-clip-text text-transparent">
+              {" "}
+              Mining Excellence
+            </span>
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-12">
-            Unleash the potential of blockchain technology with our cutting-edge mining solutions.
-            Industry-leading performance meets next-generation efficiency.
+          <p className="mx-auto mb-12 max-w-3xl text-xl text-gray-300">
+            Unleash the potential of blockchain technology with our cutting-edge
+            mining solutions. Industry-leading performance meets next-generation
+            efficiency.
           </p>
 
           {/* Stats section */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto mt-16">
-            <div className="p-6 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10">
-              <Gauge className="w-12 h-12 text-secondary mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-white mb-2">140+ TH/s</h3>
+          <div className="mx-auto mt-16 grid max-w-4xl grid-cols-1 gap-8 md:grid-cols-3">
+            <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
+              <Gauge className="mx-auto mb-4 h-12 w-12 text-secondary" />
+              <h3 className="mb-2 text-2xl font-bold text-white">140+ TH/s</h3>
               <p className="text-gray-400">Maximum Hashrate</p>
             </div>
-            <div className="p-6 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10">
-              <Zap className="w-12 h-12 text-secondary mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-white mb-2">98%</h3>
+            <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
+              <Zap className="mx-auto mb-4 h-12 w-12 text-secondary" />
+              <h3 className="mb-2 text-2xl font-bold text-white">98%</h3>
               <p className="text-gray-400">Power Efficiency</p>
             </div>
-            <div className="p-6 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10">
-              <Cpu className="w-12 h-12 text-secondary mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-white mb-2">24/7</h3>
+            <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
+              <Cpu className="mx-auto mb-4 h-12 w-12 text-secondary" />
+              <h3 className="mb-2 text-2xl font-bold text-white">24/7</h3>
               <p className="text-gray-400">Technical Support</p>
             </div>
           </div>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
-        
-            <button className="px-8 py-4 bg-transparent border border-secondary hover:bg-white/5 text-white font-semibold rounded-lg transition-colors">
-              Contact Us
-            </button>
+          <div className="mt-12 flex flex-col justify-center gap-4 sm:flex-row">
+            <Link href="/contactUs">
+              <button className="rounded-lg border border-secondary bg-transparent px-8 py-4 font-semibold text-white transition-colors hover:bg-white/5">
+                Contact Us
+              </button>
+            </Link>
           </div>
         </div>
       </div>
