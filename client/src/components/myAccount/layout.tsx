@@ -29,7 +29,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const dispatch = useDispatch();
   const router = useRouter();
 
-  const MenuLink: React.FC<MenuLinkProps> = ({ link, icon: Icon, label, isMobile }) => {
+  const MenuLink: React.FC<MenuLinkProps> = ({
+    link,
+    icon: Icon,
+    label,
+    isMobile,
+  }) => {
     const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
       e.preventDefault();
       if (label === "Logout") {
@@ -46,20 +51,22 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <a
           href={link}
           onClick={handleClick}
-          className="flex flex-col items-center space-y-1 px-4 py-2 relative"
+          className="relative flex flex-col items-center space-y-1 px-4 py-2"
         >
           <Icon
             className={`h-5 w-5 ${
               isActive ? "text-[#21eb00]" : "text-zinc-400"
             }`}
           />
-          <span className={`text-xs ${
-            isActive ? "text-[#21eb00]" : "text-zinc-400"
-          }`}>
+          <span
+            className={`text-xs ${
+              isActive ? "text-[#21eb00]" : "text-zinc-400"
+            }`}
+          >
             {label}
           </span>
           {isActive && (
-            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#21eb00]" />
+            <div className="absolute bottom-0 left-0 h-0.5 w-full bg-[#21eb00]" />
           )}
         </a>
       );
@@ -104,7 +111,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const navigationLinks = [
     { link: "/profile", icon: Settings, label: "Dashboard" },
     { link: "/profile/assignProfile", icon: Settings, label: "Total Machine" },
-    { link: "/UserProfile", icon: User, label: "Profile" },
+    { link: "/profile/UserProfile", icon: User, label: "Profile" },
     { link: "/profile/withdraw", icon: User, label: "Withdraw" },
     { link: "#", icon: LogOut, label: "Logout" },
   ];
@@ -112,7 +119,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   return (
     <div className="flex min-h-screen flex-col bg-black text-white lg:flex-row">
       {/* Mobile Navigation Bar */}
-      <div className=" top-0 left-0 right-0 z-50 bg-black/95 border-b border-zinc-800 flex justify-around items-center lg:hidden">
+      <div className=" left-0 right-0 top-0 z-50 flex items-center justify-around border-b border-zinc-800 bg-black/95 lg:hidden">
         {navigationLinks.map((item, index) => (
           <MenuLink
             key={index}
@@ -148,7 +155,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       {/* Logout Confirmation Modal */}
       {showLogoutModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-lg border border-zinc-800 bg-zinc-900 p-6 mx-4">
+          <div className="mx-4 w-full max-w-sm rounded-lg border border-zinc-800 bg-zinc-900 p-6">
             <h3 className="mb-4 text-xl font-semibold">Confirm Logout</h3>
             <p className="mb-6 text-zinc-400">
               Are you sure you want to logout?
@@ -162,7 +169,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               </button>
               <button
                 onClick={handleLogout}
-                className="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+                className="bg-red-600 hover:bg-red-700 rounded-lg px-4 py-2 text-white"
               >
                 Yes
               </button>
