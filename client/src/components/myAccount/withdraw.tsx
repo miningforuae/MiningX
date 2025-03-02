@@ -95,7 +95,7 @@ const WithdrawalDashboard = () => {
         clearTimeout(retryTimeout);
       }
     };
-  }, [dispatch, user?.email, isAuthenticated, retryCount]);
+  }, [dispatch, user?.id, isAuthenticated, retryCount]);
 
   const StatsOverview: React.FC<StatsOverviewProps & { balance: any }> = ({ 
     profitData, 
