@@ -1,28 +1,33 @@
-// components/AdminNavbar.tsx
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
-import { useSelector } from "react-redux";
+import { usePathname, useRouter } from "next/navigation";
+import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/store/store";
 import { useAppSelector } from "@/lib/store/reduxHooks";
+import { logout } from "@/lib/feature/auth/authSlice";
+import { useLogoutMutation } from "@/lib/feature/auth/authThunk";
 
 export const AdminNavbar = () => {
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const [logoutAPI] = useLogoutMutation();
+  
   const { user, isAuthenticated } = useAppSelector(
     (state: RootState) => state.auth,
   );
-  const auth = useSelector((state: RootState) => state.auth);
-
+  
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  console.log("AdminNavbar - Full auth state:", {
-    user,
-    isAuthenticated,
-    userRole: user?.role,
-    userObject: JSON.stringify(user, null, 2),
-  });
+  
+  useEffect(() => {
+    console.log("AdminNavbar - Auth state changed:", {
+      isAuthenticated,
+      userRole: user?.role,
+    });
+  }, [isAuthenticated, user]);
+  
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -33,34 +38,36 @@ export const AdminNavbar = () => {
       document.body.style.overflow = "unset";
     };
   }, [isMobileMenuOpen]);
-
-  if (!auth.isAuthenticated || !auth.user || auth.user.role !== "admin") {
+  
+  const handleAdminLogout = async () => {
+    try {
+      await logoutAPI().unwrap();
+      dispatch(logout());
+            localStorage.removeItem("user");
+      localStorage.removeItem("token");
+      
+      router.push("/");
+    } catch (error) {
+      console.error("Admin logout failed:", error);
+    }
+  };
+  
+  // Early return if not admin - improved check with proper type safety
+  if (!isAuthenticated || !user || user.role !== "admin") {
     return null;
   }
-
+  
   return (
     <>
       <header className="hidden w-full flex-col bg-black md:block">
-        <nav className="mx-1  items-center justify-between rounded-2xl bg-gray-800 px-6 py-3 shadow-sm md:mx-11 md:flex">
+        <nav className="mx-1 items-center justify-between rounded-2xl bg-gray-800 px-6 py-3 shadow-sm md:mx-11 md:flex">
           <div className="flex space-x-3 md:space-x-9">
-            {/* <Link
-              href="/ProductTable"
-              className="font-semibold text-[#21eb00] hover:underline"
-            >
-              All Product{" "}
-            </Link> */}
             <Link
               href="/AllUser"
               className="text-gray-300 hover:text-[#21eb00]"
             >
               All User
             </Link>
-            {/* <Link
-              href="/ProductUpload"
-              className="text-gray-300 hover:text-[#21eb00]"
-            >
-              Add Machine{" "}
-            </Link> */}
             <Link href="/Assign" className="text-gray-300 hover:text-[#21eb00]">
               Assign Machine{" "}
             </Link>
@@ -85,9 +92,11 @@ export const AdminNavbar = () => {
           </div>
          
           <button
-            onClick={() => console.log("Logout clicked")}
+            onClick={handleAdminLogout}
             className="flex items-center space-x-2 text-[#21eb00] hover:text-green-400"
-          ></button>
+          >
+            Logout
+          </button>
         </nav>
       </header>
     </>

@@ -18,16 +18,17 @@ const authSlice = createSlice({
     },
     
     logout: (state) => {
+      // Complete state reset
       state.user = null;
       state.isAuthenticated = false;
       state.token = null;
+      state.isLoading = false;
     },
     
     setCredentials: (state, action: PayloadAction<AuthResponse>) => {
       state.user = action.payload.user;
       state.token = action.payload.token;
       state.isAuthenticated = true;
-    
     },
 
     setLoading: (state, action: PayloadAction<boolean>) => {
