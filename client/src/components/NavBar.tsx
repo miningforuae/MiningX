@@ -1,13 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Menu, X, Heart, ShoppingCart, RepeatIcon, User } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import Link from "next/link";
 import { RootState } from "@/lib/store/store";
 import { logout, setUser } from "@/lib/feature/auth/authSlice";
-import { useGetCurrentUserQuery } from "@/lib/feature/auth/authThunk";
+import { useGetCurrentUserQuery, useLogoutMutation } from "@/lib/feature/auth/authThunk";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { SpanStatus } from "next/dist/trace";
 
 interface NavLink {
   label: string;
@@ -22,14 +21,19 @@ const NavBar = () => {
   );
 
   const router = useRouter();
-  const { isLoading } = useGetCurrentUserQuery();
+  const { isLoading, refetch } = useGetCurrentUserQuery();
+  const [logoutAPI] = useLogoutMutation();
   const dispatch = useDispatch();
   const pathname = usePathname();
 
   const handleLogout = async () => {
     try {
-      await logout();
-      dispatch(setUser(null));
+      await logoutAPI().unwrap(); 
+      dispatch(logout()); 
+      
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+      
       router.push("/");
       setIsMenuOpen(false);
     } catch (error) {
@@ -95,9 +99,7 @@ const NavBar = () => {
                   <button className="flex items-center space-x-2 transition-colors hover:text-green-500">
                     <User className="h-5 w-5" />
                     <span className="text-green-500 font-bold">
-                    {user?.firstName ? user.firstName + ' ' : ''}{user?.lastName || ''}
-
-
+                      {user?.firstName ? user.firstName + ' ' : ''}{user?.lastName || ''}
                     </span>
                   </button>
                   <div className="invisible absolute right-0 top-full w-48 rounded-md bg-white py-1 shadow-lg group-hover:visible">
@@ -154,9 +156,7 @@ const NavBar = () => {
                 href="/profile"
                 className="text-sm font-medium text-white hover:text-green-500"
               >
-
-               <span className="text-green-500 font-bold l">Profile</span>
-                {/* <User className="h-5 w-5" /> */}
+                <span className="text-green-500 font-bold l">Profile</span>
               </Link>
               <button
                 onClick={handleLogout}
