@@ -28,16 +28,29 @@ const NavBar = () => {
 
   const handleLogout = async () => {
     try {
-      await logoutAPI().unwrap(); 
-      dispatch(logout()); 
+      // Call the logout API
+      const result = await logoutAPI().unwrap();
+      console.log("Logout API response:", result);
       
+      // Dispatch Redux action to clear state
+      dispatch(logout());
+      
+      // Clear localStorage
       localStorage.removeItem("user");
       localStorage.removeItem("token");
       
-      router.push("/");
-      setIsMenuOpen(false);
+      // Force refresh the page to ensure all state is reset
+      window.location.href = "/";
     } catch (error) {
       console.error("Logout failed:", error);
+      
+      // Even if the API call fails, still clear local state
+      dispatch(logout());
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+      
+      // Force refresh the page
+      window.location.href = "/";
     }
   };
 
