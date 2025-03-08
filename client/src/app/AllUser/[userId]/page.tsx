@@ -32,26 +32,47 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   fetchUserMachines,
   fetchUserTotalProfit,
-  fetchUserTransactions,
 } from "@/lib/feature/userMachine/usermachineApi";
 import { AppDispatch } from "@/lib/store/store";
 import { useUsers } from "@/hooks/Userdetail";
+import { getUserBalance } from "@/lib/feature/userMachine/balanceSlice"; // Added import for balance fetching
+import { fetchUserWithdrawals } from "@/lib/feature/withdraw/withdrawalSlice";
 
-// Fixed interface to match the actual Redux state structure
 interface RootState {
   userMachine: {
     userMachines: any[];
     userProfit: {
       totalProfit: number;
     };
-    transactions: {
-      transactions: any[];
-      totalTransactions: number;
+    isLoading: boolean;
+  };
+  transactions: {
+    transactions: any[];
+    totalTransactions: number;
+    isLoading: boolean;
+  };
+  balance: {
+    userBalance: {
+      balances: {
+        total: number;
+      };
     };
     isLoading: boolean;
   };
+  withdrawal: {
+    withdrawals: any[];
+    pendingWithdrawals: any[];
+    allWithdrawals: any[];
+    stats: any;
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalWithdrawals: number;
+    };
+    isLoading: boolean;
+    error: string | null;
+  };
 }
-
 const UserDetailsPage = () => {
   const { userId } = useParams();
   const router = useRouter();
@@ -63,30 +84,34 @@ const UserDetailsPage = () => {
   
   // Get the user machine state from Redux
   const userMachineState = useSelector((state: RootState) => state.userMachine);
-  
+  const transactionsState = useSelector((state: RootState) => state.transactions);
+  const balanceState = useSelector((state: RootState) => state.balance);
+  const withdrawalState = useSelector((state: RootState) => state.withdrawal);
+  const withdrawals = withdrawalState?.withdrawals || [];
   // Destructure with fallback values to prevent errors
   const userMachines = userMachineState?.userMachines || [];
   const userProfit = userMachineState?.userProfit || { totalProfit: 0 };
-  const transactions = userMachineState?.transactions || { transactions: [], totalTransactions: 0 };
-  const isLoading = userMachineState?.isLoading || false;
-
-  console.log("Redux State:", userMachineState);
-  console.log("User Profit:", userProfit);
-  console.log("Transactions:", transactions);
+  const transactions = transactionsState || { transactions: [], totalTransactions: 0 };
+  const isLoading = userMachineState?.isLoading || transactionsState?.isLoading || balanceState?.isLoading || false;
+  const userBalance = balanceState?.userBalance?.balances?.total || 0;
 
   const { users } = useUsers();
   const currentUser = users?.find((user) => user._id === userId) || null;
-  console.log("🚀 ~ UserDetailsPage ~ currentUser:", currentUser);
 
   useEffect(() => {
-    if (userId) {
+    if (userId && currentUser?.email) {
       setLocalLoading(true);
       
       // Create an array of promises for all data fetching
       const fetchPromises = [
         dispatch(fetchUserMachines(userId)),
         dispatch(fetchUserTotalProfit(userId)),
-        dispatch(fetchUserTransactions({ userIdentifier: userId }))
+        dispatch(fetchUserWithdrawals({ 
+          email: currentUser.email,
+          page: 1,
+          limit: 10
+        })),
+        dispatch(getUserBalance(userId))
       ];
       
       // Wait for all promises to resolve
@@ -100,7 +125,8 @@ const UserDetailsPage = () => {
           setLocalLoading(false);
         });
     }
-  }, [dispatch, userId]);
+  }, [dispatch, userId, currentUser]);
+
 
   const formatDate = (date) => {
     if (!date) return "N/A";
@@ -219,12 +245,12 @@ const UserDetailsPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2 text-gray-100">
                   <DollarSign className="h-4 w-4 text-blue-400" />
-                  <span>Total Profit</span>
+                  <span>Total Balance</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-green-400">
-                  {formatCurrency(userProfit?.totalProfit || 0)}
+                  {formatCurrency(userBalance || userProfit?.totalProfit || 0)}
                 </div>
               </CardContent>
             </Card>
@@ -307,74 +333,68 @@ const UserDetailsPage = () => {
         </TabsContent>
 
         {/* Transactions Tab */}
-        <TabsContent value="transactions">
-          <Card className="border-gray-700/50 bg-gray-800/90 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-gray-100">
-                Transaction History
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {transactions?.transactions && transactions.transactions.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-gray-700 bg-gray-900/50">
-                      <TableHead className="text-gray-300">Date</TableHead>
-                      <TableHead className="text-gray-300">Type</TableHead>
-                      <TableHead className="text-gray-300">Amount</TableHead>
-                      <TableHead className="text-gray-300">Status</TableHead>
-                      <TableHead className="text-gray-300">Details</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {transactions.transactions.map((transaction) => (
-                      <TableRow
-                        key={transaction._id}
-                        className="border-gray-700/50 text-gray-100 hover:bg-gray-700/50"
-                      >
-                        <TableCell>
-                          {formatDate(transaction.transactionDate)}
-                        </TableCell>
-                        <TableCell>
-                          <span
-                            className={`rounded-full px-2 py-1 text-xs font-semibold
-                            ${
-                              transaction.type === "withdrawal"
-                                ? "bg-blue-500/20 text-blue-400"
-                                : "bg-green-500/20 text-green-400"
-                            }`}
-                          >
-                            {transaction.type || "unknown"}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-green-400">
-                          {formatCurrency(transaction.amount)}
-                        </TableCell>
-                        <TableCell>
-                          <span
-                            className={`rounded-full px-2 py-1 text-xs font-semibold
-                            ${
-                              transaction.status === "completed"
-                                ? "bg-green-500/20 text-green-400"
-                                : "bg-yellow-500/20 text-yellow-400"
-                            }`}
-                          >
-                            {transaction.status || "pending"}
-                          </span>
-                        </TableCell>
-                        <TableCell>{transaction.details || "N/A"}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="flex h-24 items-center justify-center text-gray-400">
-                  No transactions found for this user
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+      {/* Transactions Tab */}
+<TabsContent value="transactions">
+  <Card className="border-gray-700/50 bg-gray-800/90 shadow-lg">
+    <CardHeader>
+      <CardTitle className="text-gray-100">
+        Transaction History
+      </CardTitle>
+    </CardHeader>
+    <CardContent>
+      {withdrawals && withdrawals.length > 0 ? (
+        <Table>
+          <TableHeader>
+            <TableRow className="border-gray-700 bg-gray-900/50">
+              <TableHead className="text-gray-300">Date</TableHead>
+              <TableHead className="text-gray-300">Type</TableHead>
+              <TableHead className="text-gray-300">Amount</TableHead>
+              <TableHead className="text-gray-300">Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {withdrawals.map((withdrawal) => (
+              <TableRow
+                key={withdrawal._id}
+                className="border-gray-700/50 text-gray-100 hover:bg-gray-700/50"
+              >
+                <TableCell>
+                  {formatDate(withdrawal.transactionDate)}
+                </TableCell>
+                <TableCell>
+                  <span className="rounded-full px-2 py-1 text-xs font-semibold bg-blue-500/20 text-blue-400">
+                    withdrawal
+                  </span>
+                </TableCell>
+                <TableCell className="font-semibold text-red-400">
+                  -{formatCurrency(withdrawal.amount)}
+                </TableCell>
+                <TableCell>
+                  <span
+                    className={`rounded-full px-2 py-1 text-xs font-semibold
+                    ${
+                      withdrawal.status === "approved"
+                        ? "bg-green-500/20 text-green-400"
+                        : withdrawal.status === "pending"
+                        ? "bg-yellow-500/20 text-yellow-400"
+                        : "bg-red-500/20 text-red-400"
+                    }`}
+                  >
+                    {withdrawal.status || "pending"}
+                  </span>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      ) : (
+        <div className="flex h-24 items-center justify-center text-gray-400">
+          No withdrawals found for this user
+        </div>
+      )}
+    </CardContent>
+  </Card>
+</TabsContent>
       </Tabs>
     </div>
   );
