@@ -127,37 +127,37 @@ const DashboardHero = () => {
       title: "Total Balance",
       value: `$${balance?.balances?.total?.toLocaleString() || '0'}`,
       subtitle: "Available funds",
-      path: "/profile/assignProfile",
+      path: "/profile/ToatalMachine",
     },
     {
       icon: Coins,
       title: "Mining Profit",
       value: `$${balance?.balances?.mining?.toLocaleString() || '0'}`,
       subtitle: "Mining earnings",
-      path: "/profile/assignProfile",
+      path: "/profile/ToatalMachine",
     },
     {
       icon: FileText,
       title: "Active Orders",
       value: activeMachinesCount.toString(),
       subtitle: "Current active machines",
-      path: "/profile/assignProfile",
+      path: "/profile/ToatalMachine",
     },
 
-    {
-      icon: DollarSign,
-      title: "Total Withdrawn",
-      value: `$${totalWithdrawn.toFixed(0)}`,
-      subtitle: "Approved withdrawals",
-      path: "/profile/withdraw",
-    },
-    {
-      icon: BarChart3,
-      title: "Transactions",
-      value: totalTransactions.toString(),
-      subtitle: "All-time withdrawals",
-      path: "/profile/withdraw",
-    }
+    // {
+    //   icon: DollarSign,
+    //   title: "Total Withdrawn",
+    //   value: `$${totalWithdrawn.toFixed(0)}`,
+    //   subtitle: "Approved withdrawals",
+    //   path: "/profile/withdraw",
+    // },
+    // {
+    //   icon: BarChart3,
+    //   title: "Transactions",
+    //   value: totalTransactions.toString(),
+    //   subtitle: "All-time withdrawals",
+    //   path: "/profile/withdraw",
+    // }
   ];
 
   return (

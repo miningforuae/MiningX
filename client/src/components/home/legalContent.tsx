@@ -78,7 +78,7 @@ const legalContent = {
             <div className="space-y-4">
               <div className="rounded-md bg-gray-700/50 p-4 text-gray-300">
                 <p>
-                  By accessing and using MineX services, you agree to be bound by these Terms of Service
+                  By accessing and using EcomineX  services, you agree to be bound by these Terms of Service
                   and all applicable laws and regulations.
                 </p>
               </div>
@@ -156,7 +156,7 @@ const legalContent = {
             <h4 className="mb-4 text-lg font-semibold text-green-400">Our Commitment</h4>
             <div className="rounded-md bg-green-500/10 p-4 text-gray-300">
               <p>
-                MineX is committed to ensuring digital accessibility for people with disabilities.
+                EcomineX  is committed to ensuring digital accessibility for people with disabilities.
                 We are continually improving the user experience for everyone.
               </p>
             </div>

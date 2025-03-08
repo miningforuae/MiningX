@@ -1,7 +1,5 @@
 // @ts-nocheck
-
 "use client";
-
 import React, { useEffect, useState } from "react";
 import { useGetAllMiningMachinesQuery } from "@/lib/feature/Machines/miningMachinesApiSlice";
 import {
@@ -26,36 +24,45 @@ import { AppDispatch, RootState } from "@/lib/store/store";
 import { useDispatch, useSelector } from "react-redux";
 import { purchaseAndAssignMachine } from "@/lib/feature/userMachine/transactionSlice";
 import PurchaseConfirmationModal from "@/components/shop/confirmModal";
-import { purchaseSpecialShares, getSpecialShareMachine } from "@/lib/feature/shareMachine/shareMachineSlice";
+import {
+  purchaseSpecialShares,
+  getSpecialShareMachine,
+} from "@/lib/feature/shareMachine/shareMachineSlice";
 import { getUserBalance } from "@/lib/feature/userMachine/balanceSlice";
-
+import "react-toastify/dist/ReactToastify.css";
 const ProductDetails = ({ params }) => {
   const [quantity, setQuantity] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [shareQuantity, setShareQuantity] = useState(1);
   const [isShareRoute, setIsShareRoute] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false);
 
-  const { data: products, isLoading: productsLoading } = useGetAllMiningMachinesQuery();
+
+  const { data: products, isLoading: productsLoading } =
+    useGetAllMiningMachinesQuery();
   const dispatch = useDispatch<AppDispatch>();
 
   const { user, isAuthenticated } = useSelector(
     (state: RootState) => state.auth,
   );
-  
-  const balanceData = useSelector((state: RootState) => state.balance.userBalance);
+
+  const balanceData = useSelector(
+    (state: RootState) => state.balance.userBalance,
+  );
   const { specialMachine, loading: shareLoading } = useSelector(
-    (state: RootState) => state.shareMachine
+    (state: RootState) => state.shareMachine,
   );
 
-  // Determine if we're on a share-based machine route
   useEffect(() => {
-    // Check if the URL contains 'share' parameter
     if (params.id.includes("share")) {
       setIsShareRoute(true);
       dispatch(getSpecialShareMachine());
-    } else if (specialMachine && specialMachine.machineName.toLowerCase().replace(/\s+/g, "-") === params.id) {
-      // If we already have the special machine and it matches the URL, just set the route type
+    } else if (
+      specialMachine &&
+      specialMachine.machineName.toLowerCase().replace(/\s+/g, "-") ===
+        params.id
+    ) {
       setIsShareRoute(true);
     }
   }, [params.id, dispatch]);
@@ -66,11 +73,13 @@ const ProductDetails = ({ params }) => {
       dispatch(getSpecialShareMachine());
     }
   }, [dispatch, specialMachine, isShareRoute]);
-  
+
   // Get the appropriate product based on whether it's a share route or regular machine
-  const product = isShareRoute 
-    ? specialMachine 
-    : products?.data?.find(p => p.machineName.toLowerCase().replace(/\s+/g, "-") === params.id);
+  const product = isShareRoute
+    ? specialMachine
+    : products?.data?.find(
+        (p) => p.machineName.toLowerCase().replace(/\s+/g, "-") === params.id,
+      );
 
   // Fetch user balance when authenticated
   useEffect(() => {
@@ -113,13 +122,13 @@ const ProductDetails = ({ params }) => {
         // Purchase shares using share-specific logic
         const sharePurchasePayload = {
           userId: userId,
-          numberOfShares: parseInt(shareQuantity, 10)
+          numberOfShares: parseInt(shareQuantity, 10),
         };
 
         const resultAction = await dispatch(
-          purchaseSpecialShares(sharePurchasePayload)
+          purchaseSpecialShares(sharePurchasePayload),
         );
-        
+
         if (purchaseSpecialShares.fulfilled.match(resultAction)) {
           toast.success("Share purchase successful!");
           setIsModalOpen(false);
@@ -128,7 +137,8 @@ const ProductDetails = ({ params }) => {
         } else {
           console.error("Share purchase failed:", resultAction.error);
           const errorMessage =
-            resultAction.error?.message || "Share purchase failed. Please try again.";
+            resultAction.error?.message ||
+            "Share purchase failed. Please try again.";
           toast.error(errorMessage);
         }
       } else {
@@ -195,14 +205,12 @@ const ProductDetails = ({ params }) => {
     );
 
   // Show loading screen while data is loading
-  const isLoading = productsLoading || (isShareRoute && shareLoading);
-  if (isLoading) {
+  const isInitialLoading = productsLoading || (isShareRoute && shareLoading && !specialMachine);
+  if (isInitialLoading && !isPurchasing) {
     return (
       <LandingLayout>
         <div className="flex min-h-screen items-center justify-center bg-primary">
-          <div className="text-xl text-white">
-            Loading machine details...
-          </div>
+          <div className="text-xl text-white">Loading machine details...</div>
         </div>
       </LandingLayout>
     );
@@ -223,24 +231,24 @@ const ProductDetails = ({ params }) => {
 
   // Calculate the appropriate price and total based on machine type
   const unitPrice = isShareMachine ? sharePrice : product.priceRange;
-  const totalPrice = isShareMachine 
-    ? sharePrice * shareQuantity 
+  const totalPrice = isShareMachine
+    ? sharePrice * shareQuantity
     : product.priceRange; // For normal machines, always quantity of 1
-  
+
   return (
     <LandingLayout>
-<ToastContainer
-          position="top-right"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="dark"
-        />
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
       <div className="min-h-screen bg-gradient-to-b from-primary to-primary/95 text-white">
         <div className="container mx-auto px-4 py-8">
           {/* Back Navigation */}
@@ -257,7 +265,7 @@ const ProductDetails = ({ params }) => {
 
           <div className="grid gap-12 lg:grid-cols-2">
             {/* Product Image */}
-            <div className="rounded-3xl border max-h-[600px] p-8 bg-white">
+            <div className="max-h-[600px] rounded-3xl border bg-white p-8">
               <div className="group relative">
                 <div className="absolute inset-0 rounded-2xl bg-white opacity-0 transition-opacity duration-300 "></div>
                 <Image
@@ -282,38 +290,47 @@ const ProductDetails = ({ params }) => {
                     In Stock
                   </Badge>
                 )}
-                <h1 className={`bg-gradient-to-r ${isShareMachine ? 'from-purple-400 to-blue-500' : 'from-green-400 to-blue-500'} bg-clip-text text-4xl font-bold text-transparent`}>
+                <h1
+                  className={`bg-gradient-to-r ${isShareMachine ? "from-purple-400 to-blue-500" : "from-green-400 to-blue-500"} bg-clip-text text-4xl font-bold text-transparent`}
+                >
                   {product.machineName}
                 </h1>
                 {isShareMachine && (
                   <div className="rounded-lg bg-blue-500/20 p-3 text-blue-300">
-                    <div className="flex items-center mb-2">
+                    <div className="mb-2 flex items-center">
                       <PieChart className="mr-2 h-5 w-5 text-purple-400" />
                       <span className="font-semibold">Share-Based Mining</span>
                     </div>
                     <p className="text-sm">
-                      This is a share-based machine. Instead of purchasing the entire machine,
-                      you can buy shares and earn proportional profit.
+                      This is a share-based machine. Instead of purchasing the
+                      entire machine, you can buy shares and earn proportional
+                      profit.
                     </p>
                   </div>
                 )}
               </div>
 
               {/* Price and Quantity Section */}
-              <div className={`rounded-2xl border border-gray-700/30 ${isShareMachine ? 'bg-purple-900/20' : 'bg-gray-800/60'} p-6 backdrop-blur-xl`}>
+              <div
+                className={`rounded-2xl border border-gray-700/30 ${isShareMachine ? "bg-purple-900/20" : "bg-gray-800/60"} p-6 backdrop-blur-xl`}
+              >
                 <div className="flex flex-col space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-400">
                         {isShareMachine ? "Price per share" : "Price"}
                       </p>
-                      <p className={`text-3xl font-bold ${isShareMachine ? 'text-purple-400' : 'text-green-400'}`}>
+                      <p
+                        className={`text-3xl font-bold ${isShareMachine ? "text-purple-400" : "text-green-400"}`}
+                      >
                         ${unitPrice.toLocaleString()}
                       </p>
                     </div>
                     <div className="flex flex-col items-end">
                       <p className="text-sm text-gray-400">Total Price</p>
-                      <p className={`text-2xl font-semibold ${isShareMachine ? 'text-purple-400' : 'text-green-400'}`}>
+                      <p
+                        className={`text-2xl font-semibold ${isShareMachine ? "text-purple-400" : "text-green-400"}`}
+                      >
                         ${totalPrice.toLocaleString()}
                       </p>
                     </div>
@@ -325,7 +342,9 @@ const ProductDetails = ({ params }) => {
                       <span className="text-gray-300">Share Quantity:</span>
                       <div className="flex items-center gap-4">
                         <button
-                          onClick={() => handleQuantityChange(shareQuantity - 1)}
+                          onClick={() =>
+                            handleQuantityChange(shareQuantity - 1)
+                          }
                           className="rounded-lg bg-gray-600/50 p-2 transition-colors hover:bg-gray-600"
                           disabled={shareQuantity <= 1}
                         >
@@ -335,7 +354,9 @@ const ProductDetails = ({ params }) => {
                           {shareQuantity}
                         </span>
                         <button
-                          onClick={() => handleQuantityChange(shareQuantity + 1)}
+                          onClick={() =>
+                            handleQuantityChange(shareQuantity + 1)
+                          }
                           className="rounded-lg bg-gray-600/50 p-2 transition-colors hover:bg-gray-600"
                           disabled={shareQuantity >= availableShares}
                         >
@@ -351,27 +372,24 @@ const ProductDetails = ({ params }) => {
               {isShareMachine && (
                 <div className="rounded-2xl border border-gray-700/30 bg-purple-900/20 p-6 backdrop-blur-xl">
                   <h2 className="mb-4 flex items-center text-xl font-semibold">
-                    <DollarSign className="mr-2 text-purple-400" /> Share Investment Details
+                    <DollarSign className="mr-2 text-purple-400" /> Share
+                    Investment Details
                   </h2>
                   <div className="space-y-4">
-                    <div className="flex justify-between p-3 rounded-lg bg-gray-700/30">
+                    <div className="flex justify-between rounded-lg bg-gray-700/30 p-3">
                       <span>Total Shares:</span>
                       <span className="font-medium">{product.totalShares}</span>
                     </div>
-                
-                    <div className="flex justify-between p-3 rounded-lg bg-gray-700/30">
+
+                    <div className="flex justify-between rounded-lg bg-gray-700/30 p-3">
                       <span>Profit per share (monthly):</span>
-                      <span className="font-medium text-purple-400">${profitPerShare}</span>
+                      <span className="font-medium text-purple-400">
+                        ${profitPerShare}
+                      </span>
                     </div>
-                    <div className="flex justify-between p-3 rounded-lg bg-gray-700/30">
+                    <div className="flex justify-between rounded-lg bg-gray-700/30 p-3">
                       <span>Your shares:</span>
                       <span className="font-medium">{shareQuantity}</span>
-                    </div>
-                    <div className="flex justify-between p-3 rounded-lg bg-gray-700/30">
-                      <span>Expected monthly profit:</span>
-                      <span className="font-medium text-purple-400">
-                        ${(profitPerShare * shareQuantity).toFixed(2)}
-                      </span>
                     </div>
                   </div>
                 </div>
@@ -382,13 +400,13 @@ const ProductDetails = ({ params }) => {
                 <button
                   onClick={handleBuyClick}
                   className={`flex flex-1 transform items-center justify-center gap-3 rounded-xl ${
-                    isShareMachine 
-                      ? 'bg-gradient-to-r from-purple-500 to-blue-600 shadow-purple-500/20' 
-                      : 'bg-gradient-to-r from-green-500 to-green-600 shadow-green-500/20'
+                    isShareMachine
+                      ? "bg-gradient-to-r from-purple-500 to-blue-600 shadow-purple-500/20"
+                      : "bg-gradient-to-r from-green-500 to-green-600 shadow-green-500/20"
                   } px-6 py-4 text-white shadow-lg transition-all duration-300 hover:scale-[1.02] ${
                     isShareMachine
-                      ? 'hover:from-purple-600 hover:to-blue-700'
-                      : 'hover:from-green-600 hover:to-green-700'
+                      ? "hover:from-purple-600 hover:to-blue-700"
+                      : "hover:from-green-600 hover:to-green-700"
                   }`}
                 >
                   <ShoppingCart className="h-5 w-5" />
@@ -396,14 +414,17 @@ const ProductDetails = ({ params }) => {
                     {isShareMachine ? "Buy Shares" : "Buy Now"}
                   </span>
                 </button>
-               
               </div>
 
               {/* Technical Specifications */}
-              <div className={`rounded-2xl border border-gray-700/30 ${isShareMachine ? 'bg-purple-900/20' : 'bg-gray-800/60'} p-6 backdrop-blur-xl`}>
+              <div
+                className={`rounded-2xl border border-gray-700/30 ${isShareMachine ? "bg-purple-900/20" : "bg-gray-800/60"} p-6 backdrop-blur-xl`}
+              >
                 <h2 className="mb-4 flex items-center text-xl font-semibold">
-                  <Zap className={`mr-2 ${isShareMachine ? 'text-blue-400' : 'text-yellow-400'}`} /> Technical
-                  Specifications
+                  <Zap
+                    className={`mr-2 ${isShareMachine ? "text-blue-400" : "text-yellow-400"}`}
+                  />{" "}
+                  Technical Specifications
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex items-center gap-3 rounded-xl bg-gray-700/30 p-4 transition-colors hover:bg-gray-700/40">
@@ -423,13 +444,20 @@ const ProductDetails = ({ params }) => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 rounded-xl bg-gray-700/30 p-4 transition-colors hover:bg-gray-700/40">
-                    <DollarSign className={`h-8 w-8 ${isShareMachine ? 'text-purple-400' : 'text-green-400'}`} />
+                    <DollarSign
+                      className={`h-8 w-8 ${isShareMachine ? "text-purple-400" : "text-green-400"}`}
+                    />
                     <div>
                       <p className="text-sm text-gray-400">
                         {isShareMachine ? "Profit per Share" : "Monthly Profit"}
                       </p>
-                      <p className={`font-medium ${isShareMachine ? 'text-purple-400' : 'text-green-400'}`}>
-                        ${isShareMachine ? profitPerShare : product.monthlyProfit}
+                      <p
+                        className={`font-medium ${isShareMachine ? "text-purple-400" : "text-green-400"}`}
+                      >
+                        $
+                        {isShareMachine
+                          ? profitPerShare
+                          : product.monthlyProfit}
                       </p>
                     </div>
                   </div>
@@ -466,7 +494,7 @@ const ProductDetails = ({ params }) => {
         profitPerShare={profitPerShare}
         balances={{
           total: balanceData?.balances?.total || 0,
-          available: balanceData?.balances?.total || 0
+          available: balanceData?.balances?.total || 0,
         }}
         isProcessing={isProcessing}
       />

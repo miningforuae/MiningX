@@ -14,6 +14,7 @@ import {
   MapPin,
   Calendar,
   ArrowLeft,
+  Loader2
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,6 +37,7 @@ import {
 import { AppDispatch } from "@/lib/store/store";
 import { useUsers } from "@/hooks/Userdetail";
 
+// Fixed interface to match the actual Redux state structure
 interface RootState {
   userMachine: {
     userMachines: any[];
@@ -56,12 +58,21 @@ const UserDetailsPage = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const [activeTab, setActiveTab] = useState("overview");
-  const {
-    userMachines = [],
-    userProfit = { totalProfit: 0 },
-    transactions = { transactions: [], totalTransactions: 0 },
-    isLoading,
-  } = useSelector((state: RootState) => state.userMachine);
+  const [dataFetched, setDataFetched] = useState(false);
+  const [localLoading, setLocalLoading] = useState(true);
+  
+  // Get the user machine state from Redux
+  const userMachineState = useSelector((state: RootState) => state.userMachine);
+  
+  // Destructure with fallback values to prevent errors
+  const userMachines = userMachineState?.userMachines || [];
+  const userProfit = userMachineState?.userProfit || { totalProfit: 0 };
+  const transactions = userMachineState?.transactions || { transactions: [], totalTransactions: 0 };
+  const isLoading = userMachineState?.isLoading || false;
+
+  console.log("Redux State:", userMachineState);
+  console.log("User Profit:", userProfit);
+  console.log("Transactions:", transactions);
 
   const { users } = useUsers();
   const currentUser = users?.find((user) => user._id === userId) || null;
@@ -69,13 +80,30 @@ const UserDetailsPage = () => {
 
   useEffect(() => {
     if (userId) {
-      dispatch(fetchUserMachines(userId));
-      dispatch(fetchUserTotalProfit(userId));
-      dispatch(fetchUserTransactions({ userIdentifier: userId }));
+      setLocalLoading(true);
+      
+      // Create an array of promises for all data fetching
+      const fetchPromises = [
+        dispatch(fetchUserMachines(userId)),
+        dispatch(fetchUserTotalProfit(userId)),
+        dispatch(fetchUserTransactions({ userIdentifier: userId }))
+      ];
+      
+      // Wait for all promises to resolve
+      Promise.all(fetchPromises)
+        .then(() => {
+          setDataFetched(true);
+          setLocalLoading(false);
+        })
+        .catch(error => {
+          console.error("Error fetching user data:", error);
+          setLocalLoading(false);
+        });
     }
   }, [dispatch, userId]);
 
   const formatDate = (date) => {
+    if (!date) return "N/A";
     return new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
@@ -87,12 +115,13 @@ const UserDetailsPage = () => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
-    }).format(amount);
+    }).format(amount || 0);
   };
 
-  if (isLoading) {
+  if (localLoading || isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black p-6 text-gray-100">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-400 mr-2" />
         <div className="text-xl">Loading user details...</div>
       </div>
     );
@@ -128,7 +157,7 @@ const UserDetailsPage = () => {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             <div className="flex items-center space-x-2 rounded-lg bg-gray-700/30 p-3 text-gray-100">
               <Mail className="h-4 w-4 text-blue-400" />
-              <span>{currentUser?.email}</span>
+              <span>{currentUser?.email || "N/A"}</span>
             </div>
             <div className="flex items-center space-x-2 rounded-lg bg-gray-700/30 p-3 text-gray-100">
               <Phone className="h-4 w-4 text-blue-400" />
@@ -142,10 +171,6 @@ const UserDetailsPage = () => {
               <Calendar className="h-4 w-4 text-blue-400" />
               <span>Joined {formatDate(currentUser?.createdAt)}</span>
             </div>
-            {/* <div className="flex items-center space-x-2 rounded-lg bg-gray-700/30 p-3 text-gray-100">
-              <span className="h-4 w-4 text-blue-400">Role:</span>
-              <span>{currentUser?.role || "N/A"}</span>
-            </div> */}
           </div>
         </CardContent>
       </Card>
@@ -227,50 +252,56 @@ const UserDetailsPage = () => {
               <CardTitle className="text-gray-100">Assigned Machines</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-gray-700 bg-gray-900/50">
-                    <TableHead className="text-gray-300">
-                      Machine Name
-                    </TableHead>
-                    <TableHead className="text-gray-300">Model</TableHead>
-                    <TableHead className="text-gray-300">
-                      Assigned Date
-                    </TableHead>
-                    <TableHead className="text-gray-300">Status</TableHead>
-                    <TableHead className="text-gray-300">
-                      Current Profit
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {userMachines?.map((machine) => (
-                    <TableRow
-                      key={machine._id}
-                      className="border-gray-700/50 text-gray-100 hover:bg-gray-700/50"
-                    >
-                      <TableCell>{machine.machine.machineName}</TableCell>
-                      <TableCell>{machine.machine.model}</TableCell>
-                      <TableCell>{formatDate(machine.assignedDate)}</TableCell>
-                      <TableCell>
-                        <span
-                          className={`rounded-full px-2 py-1 text-xs font-semibold
-                          ${
-                            machine.status === "active"
-                              ? "bg-green-500/20 text-green-400"
-                              : "bg-red-500/20 text-red-400"
-                          }`}
-                        >
-                          {machine.status}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-green-400">
-                        {formatCurrency(machine.monthlyProfitAccumulated)}
-                      </TableCell>
+              {userMachines && userMachines.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-gray-700 bg-gray-900/50">
+                      <TableHead className="text-gray-300">
+                        Machine Name
+                      </TableHead>
+                      <TableHead className="text-gray-300">Model</TableHead>
+                      <TableHead className="text-gray-300">
+                        Assigned Date
+                      </TableHead>
+                      <TableHead className="text-gray-300">Status</TableHead>
+                      <TableHead className="text-gray-300">
+                        Current Profit
+                      </TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {userMachines.map((machine) => (
+                      <TableRow
+                        key={machine._id}
+                        className="border-gray-700/50 text-gray-100 hover:bg-gray-700/50"
+                      >
+                        <TableCell>{machine.machine?.machineName || "N/A"}</TableCell>
+                        <TableCell>{machine.machine?.model || "N/A"}</TableCell>
+                        <TableCell>{formatDate(machine.assignedDate)}</TableCell>
+                        <TableCell>
+                          <span
+                            className={`rounded-full px-2 py-1 text-xs font-semibold
+                            ${
+                              machine.status === "active"
+                                ? "bg-green-500/20 text-green-400"
+                                : "bg-red-500/20 text-red-400"
+                            }`}
+                          >
+                            {machine.status || "unknown"}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-green-400">
+                          {formatCurrency(machine.monthlyProfitAccumulated)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="flex h-24 items-center justify-center text-gray-400">
+                  No machines assigned to this user
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -284,57 +315,63 @@ const UserDetailsPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-gray-700 bg-gray-900/50">
-                    <TableHead className="text-gray-300">Date</TableHead>
-                    <TableHead className="text-gray-300">Type</TableHead>
-                    <TableHead className="text-gray-300">Amount</TableHead>
-                    <TableHead className="text-gray-300">Status</TableHead>
-                    <TableHead className="text-gray-300">Details</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {transactions?.transactions?.map((transaction) => (
-                    <TableRow
-                      key={transaction._id}
-                      className="border-gray-700/50 text-gray-100 hover:bg-gray-700/50"
-                    >
-                      <TableCell>
-                        {formatDate(transaction.transactionDate)}
-                      </TableCell>
-                      <TableCell>
-                        <span
-                          className={`rounded-full px-2 py-1 text-xs font-semibold
-                          ${
-                            transaction.type === "withdrawal"
-                              ? "bg-blue-500/20 text-blue-400"
-                              : "bg-green-500/20 text-green-400"
-                          }`}
-                        >
-                          {transaction.type}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-green-400">
-                        {formatCurrency(transaction.amount)}
-                      </TableCell>
-                      <TableCell>
-                        <span
-                          className={`rounded-full px-2 py-1 text-xs font-semibold
-                          ${
-                            transaction.status === "completed"
-                              ? "bg-green-500/20 text-green-400"
-                              : "bg-yellow-500/20 text-yellow-400"
-                          }`}
-                        >
-                          {transaction.status}
-                        </span>
-                      </TableCell>
-                      <TableCell>{transaction.details}</TableCell>
+              {transactions?.transactions && transactions.transactions.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-gray-700 bg-gray-900/50">
+                      <TableHead className="text-gray-300">Date</TableHead>
+                      <TableHead className="text-gray-300">Type</TableHead>
+                      <TableHead className="text-gray-300">Amount</TableHead>
+                      <TableHead className="text-gray-300">Status</TableHead>
+                      <TableHead className="text-gray-300">Details</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {transactions.transactions.map((transaction) => (
+                      <TableRow
+                        key={transaction._id}
+                        className="border-gray-700/50 text-gray-100 hover:bg-gray-700/50"
+                      >
+                        <TableCell>
+                          {formatDate(transaction.transactionDate)}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={`rounded-full px-2 py-1 text-xs font-semibold
+                            ${
+                              transaction.type === "withdrawal"
+                                ? "bg-blue-500/20 text-blue-400"
+                                : "bg-green-500/20 text-green-400"
+                            }`}
+                          >
+                            {transaction.type || "unknown"}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-green-400">
+                          {formatCurrency(transaction.amount)}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={`rounded-full px-2 py-1 text-xs font-semibold
+                            ${
+                              transaction.status === "completed"
+                                ? "bg-green-500/20 text-green-400"
+                                : "bg-yellow-500/20 text-yellow-400"
+                            }`}
+                          >
+                            {transaction.status || "pending"}
+                          </span>
+                        </TableCell>
+                        <TableCell>{transaction.details || "N/A"}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="flex h-24 items-center justify-center text-gray-400">
+                  No transactions found for this user
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
