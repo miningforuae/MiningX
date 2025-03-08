@@ -14,7 +14,7 @@ import {
   MapPin,
   Calendar,
   ArrowLeft,
-  Loader2
+  Loader2,
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -81,18 +81,27 @@ const UserDetailsPage = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [dataFetched, setDataFetched] = useState(false);
   const [localLoading, setLocalLoading] = useState(true);
-  
+
   // Get the user machine state from Redux
   const userMachineState = useSelector((state: RootState) => state.userMachine);
-  const transactionsState = useSelector((state: RootState) => state.transactions);
+  const transactionsState = useSelector(
+    (state: RootState) => state.transactions,
+  );
   const balanceState = useSelector((state: RootState) => state.balance);
   const withdrawalState = useSelector((state: RootState) => state.withdrawal);
   const withdrawals = withdrawalState?.withdrawals || [];
   // Destructure with fallback values to prevent errors
   const userMachines = userMachineState?.userMachines || [];
   const userProfit = userMachineState?.userProfit || { totalProfit: 0 };
-  const transactions = transactionsState || { transactions: [], totalTransactions: 0 };
-  const isLoading = userMachineState?.isLoading || transactionsState?.isLoading || balanceState?.isLoading || false;
+  const transactions = transactionsState || {
+    transactions: [],
+    totalTransactions: 0,
+  };
+  const isLoading =
+    userMachineState?.isLoading ||
+    transactionsState?.isLoading ||
+    balanceState?.isLoading ||
+    false;
   const userBalance = balanceState?.userBalance?.balances?.total || 0;
 
   const { users } = useUsers();
@@ -101,32 +110,33 @@ const UserDetailsPage = () => {
   useEffect(() => {
     if (userId && currentUser?.email) {
       setLocalLoading(true);
-      
+
       // Create an array of promises for all data fetching
       const fetchPromises = [
         dispatch(fetchUserMachines(userId)),
         dispatch(fetchUserTotalProfit(userId)),
-        dispatch(fetchUserWithdrawals({ 
-          email: currentUser.email,
-          page: 1,
-          limit: 10
-        })),
-        dispatch(getUserBalance(userId))
+        dispatch(
+          fetchUserWithdrawals({
+            email: currentUser.email,
+            page: 1,
+            limit: 10,
+          }),
+        ),
+        dispatch(getUserBalance(userId)),
       ];
-      
+
       // Wait for all promises to resolve
       Promise.all(fetchPromises)
         .then(() => {
           setDataFetched(true);
           setLocalLoading(false);
         })
-        .catch(error => {
+        .catch((error) => {
           console.error("Error fetching user data:", error);
           setLocalLoading(false);
         });
     }
   }, [dispatch, userId, currentUser]);
-
 
   const formatDate = (date) => {
     if (!date) return "N/A";
@@ -147,7 +157,7 @@ const UserDetailsPage = () => {
   if (localLoading || isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black p-6 text-gray-100">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-400 mr-2" />
+        <Loader2 className="mr-2 h-8 w-8 animate-spin text-blue-400" />
         <div className="text-xl">Loading user details...</div>
       </div>
     );
@@ -301,9 +311,13 @@ const UserDetailsPage = () => {
                         key={machine._id}
                         className="border-gray-700/50 text-gray-100 hover:bg-gray-700/50"
                       >
-                        <TableCell>{machine.machine?.machineName || "N/A"}</TableCell>
+                        <TableCell>
+                          {machine.machine?.machineName || "N/A"}
+                        </TableCell>
                         <TableCell>{machine.machine?.model || "N/A"}</TableCell>
-                        <TableCell>{formatDate(machine.assignedDate)}</TableCell>
+                        <TableCell>
+                          {formatDate(machine.assignedDate)}
+                        </TableCell>
                         <TableCell>
                           <span
                             className={`rounded-full px-2 py-1 text-xs font-semibold
@@ -333,68 +347,68 @@ const UserDetailsPage = () => {
         </TabsContent>
 
         {/* Transactions Tab */}
-      {/* Transactions Tab */}
-<TabsContent value="transactions">
-  <Card className="border-gray-700/50 bg-gray-800/90 shadow-lg">
-    <CardHeader>
-      <CardTitle className="text-gray-100">
-        Transaction History
-      </CardTitle>
-    </CardHeader>
-    <CardContent>
-      {withdrawals && withdrawals.length > 0 ? (
-        <Table>
-          <TableHeader>
-            <TableRow className="border-gray-700 bg-gray-900/50">
-              <TableHead className="text-gray-300">Date</TableHead>
-              <TableHead className="text-gray-300">Type</TableHead>
-              <TableHead className="text-gray-300">Amount</TableHead>
-              <TableHead className="text-gray-300">Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {withdrawals.map((withdrawal) => (
-              <TableRow
-                key={withdrawal._id}
-                className="border-gray-700/50 text-gray-100 hover:bg-gray-700/50"
-              >
-                <TableCell>
-                  {formatDate(withdrawal.transactionDate)}
-                </TableCell>
-                <TableCell>
-                  <span className="rounded-full px-2 py-1 text-xs font-semibold bg-blue-500/20 text-blue-400">
-                    withdrawal
-                  </span>
-                </TableCell>
-                <TableCell className="font-semibold text-red-400">
-                  -{formatCurrency(withdrawal.amount)}
-                </TableCell>
-                <TableCell>
-                  <span
-                    className={`rounded-full px-2 py-1 text-xs font-semibold
+        {/* Transactions Tab */}
+        <TabsContent value="transactions">
+          <Card className="border-gray-700/50 bg-gray-800/90 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-gray-100">
+                Transaction History
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {withdrawals && withdrawals.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-gray-700 bg-gray-900/50">
+                      <TableHead className="text-gray-300">Date</TableHead>
+                      <TableHead className="text-gray-300">Type</TableHead>
+                      <TableHead className="text-gray-300">Amount</TableHead>
+                      <TableHead className="text-gray-300">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {withdrawals.map((withdrawal) => (
+                      <TableRow
+                        key={withdrawal._id}
+                        className="border-gray-700/50 text-gray-100 hover:bg-gray-700/50"
+                      >
+                        <TableCell>
+                          {formatDate(withdrawal.transactionDate)}
+                        </TableCell>
+                        <TableCell>
+                          <span className="rounded-full bg-blue-500/20 px-2 py-1 text-xs font-semibold text-blue-400">
+                            withdrawal
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-red-400 font-semibold">
+                          -{formatCurrency(withdrawal.amount)}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={`rounded-full px-2 py-1 text-xs font-semibold
                     ${
                       withdrawal.status === "approved"
                         ? "bg-green-500/20 text-green-400"
                         : withdrawal.status === "pending"
-                        ? "bg-yellow-500/20 text-yellow-400"
-                        : "bg-red-500/20 text-red-400"
+                          ? "bg-yellow-500/20 text-yellow-400"
+                          : "bg-red-500/20 text-red-400"
                     }`}
-                  >
-                    {withdrawal.status || "pending"}
-                  </span>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      ) : (
-        <div className="flex h-24 items-center justify-center text-gray-400">
-          No withdrawals found for this user
-        </div>
-      )}
-    </CardContent>
-  </Card>
-</TabsContent>
+                          >
+                            {withdrawal.status || "pending"}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="flex h-24 items-center justify-center text-gray-400">
+                  No withdrawals found for this user
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
