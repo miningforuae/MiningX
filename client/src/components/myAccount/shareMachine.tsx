@@ -22,6 +22,8 @@ const UserSharesDashboard = () => {
   const { userShares, loading, error } = useSelector(
     (state: RootState) => state.shareMachine
   );
+
+  console.log(userShares , "inside co")
   const { user, isAuthenticated } = useSelector(
     (state: RootState) => state.auth
   );

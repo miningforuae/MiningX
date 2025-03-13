@@ -110,7 +110,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
   const navigationLinks = [
     { link: "/profile", icon: Settings, label: "Dashboard" },
-    { link: "/profile/ToatalMachine", icon: Settings, label: "Total Machine" },
+    { link: "/profile/TotalMachine", icon: Settings, label: "Total Machine" },
     { link: "/profile/UserProfile", icon: User, label: "Profile" },
     { link: "/profile/withdraw", icon: User, label: "Withdraw" },
     { link: "#", icon: LogOut, label: "Logout" },

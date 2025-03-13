@@ -127,21 +127,21 @@ const DashboardHero = () => {
       title: "Total Balance",
       value: `$${balance?.balances?.total?.toLocaleString() || '0'}`,
       subtitle: "Available funds",
-      path: "/profile/ToatalMachine",
+      path: "/profile/TotalMachine",
     },
     {
       icon: Coins,
       title: "Mining Profit",
       value: `$${balance?.balances?.mining?.toLocaleString() || '0'}`,
       subtitle: "Mining earnings",
-      path: "/profile/ToatalMachine",
+      path: "/profile/TotalMachine",
     },
     {
       icon: FileText,
       title: "Active Orders",
       value: activeMachinesCount.toString(),
       subtitle: "Current active machines",
-      path: "/profile/ToatalMachine",
+      path: "/profile/TotalMachine",
     },
 
     // {
