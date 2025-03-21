@@ -128,20 +128,20 @@ const DashboardHero = () => {
       subtitle: "Available funds",
       path: "/profile/TotalMachine",
     },
-    {
-      icon: Coins,
-      title: "Mining Profit",
-      value: `$${balance?.balances?.mining?.toLocaleString() || '0'}`,
-      subtitle: "Mining earnings",
-      path: "/profile/TotalMachine",
-    },
-    {
-      icon: FileText,
-      title: "Active Orders",
-      value: activeMachinesCount.toString(),
-      subtitle: "Current active machines",
-      path: "/profile/TotalMachine",
-    },
+    // {
+    //   icon: Coins,
+    //   title: "Mining Profit",
+    //   value: `$${balance?.balances?.mining?.toLocaleString() || '0'}`,
+    //   subtitle: "Mining earnings",
+    //   path: "/profile/TotalMachine",
+    // },
+    // {
+    //   icon: FileText,
+    //   title: "Active Orders",
+    //   value: activeMachinesCount.toString(),
+    //   subtitle: "Current active machines",
+    //   path: "/profile/TotalMachine",
+    // },
 
     // {
     //   icon: DollarSign,
