@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MessageCircle } from 'lucide-react';
 
-const FloatingWhatsApp = ({ phoneNumber = '1234567890' }) => {
+const FloatingWhatsApp = ({ phoneNumber = '+18079074455' }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   // Handle scroll event
