@@ -1,9 +1,7 @@
-// src/lib/features/shareMachine/shareMachineSlice.ts
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axiosInstance from '@/utils/axiosInstance';
 import { RootState } from '@/lib/store/store';
 
-// Types
 interface ShareMachine {
   _id: string;
   machineName: string;
@@ -39,6 +37,10 @@ interface SharePurchasePayload {
   numberOfShares: number;
 }
 
+interface ShareSalePayload {
+  numberOfSharesToSell: number;
+}
+
 interface ShareSummary {
   shares: UserShare[];
   summary: {
@@ -59,7 +61,31 @@ interface PurchaseResponse {
   }
 }
 
-// Async Thunks
+interface SaleResponse {
+  success: boolean;
+  message: string;
+  data: {
+    sale: {
+      originalValue: number;
+      deduction: number;
+      sellingPrice: number;
+      soldShares: number;
+      remainingShares: number;
+      machineDetails: {
+        name: string;
+        id: string;
+      }
+    };
+    transaction: any;
+    newBalance: {
+      total: number;
+      main: number;
+      mining: number;
+    }
+  }
+}
+
+// Existing Async Thunks
 export const getSpecialShareMachine = createAsyncThunk<
   { success: boolean; data: ShareMachine },
   void, 
@@ -112,31 +138,51 @@ export const updateAllShareProfits = createAsyncThunk<
   }
 });
 
-// Slice interface
+// New Async Thunk for selling shares
+export const sellSharePurchase = createAsyncThunk<
+  SaleResponse,
+  { sharePurchaseId: string; payload: ShareSalePayload },
+  { state: RootState; rejectValue: string }
+>('shareMachine/sellShares', async ({ sharePurchaseId, payload }, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.post(`/api/v1/sell/${sharePurchaseId}`, payload);
+    return response.data;
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || 'Failed to sell shares'
+    );
+  }
+});
+
+// State interface
 interface ShareMachineState {
   specialMachine: ShareMachine | null;
-  userShares: ShareSummary | null;
+  userShares: {
+    shares: UserShare[];
+    summary: {
+      totalShares: number;
+      totalInvestment: number;
+      expectedMonthlyProfit: number;
+    } | null;
+  };
   loading: boolean;
   error: string | null;
-  lastPurchase: PurchaseResponse | null;
-  lastProfitUpdate: {
-    timestamp: string | null;
-    count: number;
-    details: any[] | null;
-  };
+  purchaseSuccess: boolean;
+  saleSuccess: boolean;
+  updateSuccess: boolean;
 }
 
 const initialState: ShareMachineState = {
   specialMachine: null,
-  userShares: null,
+  userShares: {
+    shares: [],
+    summary: null
+  },
   loading: false,
   error: null,
-  lastPurchase: null,
-  lastProfitUpdate: {
-    timestamp: null,
-    count: 0,
-    details: null
-  }
+  purchaseSuccess: false,
+  saleSuccess: false,
+  updateSuccess: false
 };
 
 // Create the slice
@@ -144,75 +190,92 @@ const shareMachineSlice = createSlice({
   name: 'shareMachine',
   initialState,
   reducers: {
-    clearErrors: (state) => {
+    resetShareMachineState: (state) => {
       state.error = null;
-    },
-    clearPurchaseData: (state) => {
-      state.lastPurchase = null;
+      state.purchaseSuccess = false;
+      state.saleSuccess = false;
+      state.updateSuccess = false;
     }
   },
   extraReducers: (builder) => {
-    // Get Special Share Machine
-    builder.addCase(getSpecialShareMachine.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(getSpecialShareMachine.fulfilled, (state, action) => {
-      state.loading = false;
-      state.specialMachine = action.payload.data;
-    });
-    builder.addCase(getSpecialShareMachine.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload as string;
-    });
-
-    // Get User Share Details
-    builder.addCase(getUserShareDetails.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(getUserShareDetails.fulfilled, (state, action) => {
-      state.loading = false;
-      state.userShares = action.payload.data;
-    });
-    builder.addCase(getUserShareDetails.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload as string;
-    });
-
-    // Purchase Special Shares
-    builder.addCase(purchaseSpecialShares.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(purchaseSpecialShares.fulfilled, (state, action) => {
-      state.loading = false;
-      state.lastPurchase = action.payload;
-    });
-    builder.addCase(purchaseSpecialShares.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload as string;
-    });
-
-    // Update All Share Profits
-    builder.addCase(updateAllShareProfits.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(updateAllShareProfits.fulfilled, (state, action) => {
-      state.loading = false;
-      state.lastProfitUpdate = {
-        timestamp: new Date().toISOString(),
-        count: action.payload.updatedCount,
-        details: action.payload.updates
-      };
-    });
-    builder.addCase(updateAllShareProfits.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload as string;
-    });
+    builder
+      // getSpecialShareMachine
+      .addCase(getSpecialShareMachine.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getSpecialShareMachine.fulfilled, (state, action) => {
+        state.loading = false;
+        state.specialMachine = action.payload.data;
+      })
+      .addCase(getSpecialShareMachine.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      
+      // getUserShareDetails
+      .addCase(getUserShareDetails.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getUserShareDetails.fulfilled, (state, action) => {
+        state.loading = false;
+        state.userShares = action.payload.data;
+      })
+      .addCase(getUserShareDetails.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      
+      // purchaseSpecialShares
+      .addCase(purchaseSpecialShares.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.purchaseSuccess = false;
+      })
+      .addCase(purchaseSpecialShares.fulfilled, (state) => {
+        state.loading = false;
+        state.purchaseSuccess = true;
+      })
+      .addCase(purchaseSpecialShares.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.purchaseSuccess = false;
+      })
+      
+      // updateAllShareProfits
+      .addCase(updateAllShareProfits.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.updateSuccess = false;
+      })
+      .addCase(updateAllShareProfits.fulfilled, (state) => {
+        state.loading = false;
+        state.updateSuccess = true;
+      })
+      .addCase(updateAllShareProfits.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.updateSuccess = false;
+      })
+      
+      // sellSharePurchase (new)
+      .addCase(sellSharePurchase.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.saleSuccess = false;
+      })
+      .addCase(sellSharePurchase.fulfilled, (state) => {
+        state.loading = false;
+        state.saleSuccess = true;
+      })
+      .addCase(sellSharePurchase.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.saleSuccess = false;
+      });
   }
 });
 
-export const { clearErrors, clearPurchaseData } = shareMachineSlice.actions;
+export const { resetShareMachineState } = shareMachineSlice.actions;
 export default shareMachineSlice.reducer;

@@ -114,7 +114,6 @@ const DashboardHero = () => {
           )}
         </div>
         <div className="mt-3 flex items-center text-xs text-zinc-500 sm:mt-4 sm:text-sm">
-          <span className="truncate">View details</span>
           <ChevronRight className="ml-1 h-3 w-3 transition-transform duration-300 group-hover:translate-x-1 sm:h-4 sm:w-4" />
         </div>
       </div>

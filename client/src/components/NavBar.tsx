@@ -56,11 +56,7 @@ const NavBar = () => {
 
   const userMenuItems: NavLink[] = [
     { label: "Profile", href: "/profile" },
-    {
-      label: "Logout",
-      href: "/",
-      onClick: handleLogout,
-    },
+   
   ];
 
   const navLinks: NavLink[] = [
@@ -110,12 +106,16 @@ const NavBar = () => {
               ) : isAuthenticated ? (
                 <div className="group relative z-50">
                   <button className="flex items-center space-x-2 transition-colors hover:text-green-500">
-                    <User className="h-5 w-5" />
+                    {/* <User className="h-5 w-5" /> */}
+
+                    <Link href="/profile">
                     <span className="text-green-500 font-bold">
-                      {user?.firstName ? user.firstName + ' ' : ''}{user?.lastName || ''}
-                    </span>
-                  </button>
-                  <div className="invisible absolute right-0 top-full w-48 rounded-md bg-white py-1 shadow-lg group-hover:visible">
+                    Dashbord   
+                                     </span>
+                    </Link>
+                    </button>
+
+                  {/* <div className="invisible absolute right-0 top-full w-48 rounded-md bg-white py-1 shadow-lg group-hover:visible">
                     {userMenuItems.map((item) => (
                       <Link
                         key={item.label}
@@ -126,7 +126,7 @@ const NavBar = () => {
                         {item.label}
                       </Link>
                     ))}
-                  </div>
+                  </div> */}
                 </div>
               ) : (
                 <Link

@@ -37,7 +37,7 @@ const ProductDetails = ({ params }) => {
   const [shareQuantity, setShareQuantity] = useState(1);
   const [isShareRoute, setIsShareRoute] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
-
+  const [displayBalance, setDisplayBalance] = useState(0);
 
   const { data: products, isLoading: productsLoading } =
     useGetAllMiningMachinesQuery();
@@ -53,6 +53,13 @@ const ProductDetails = ({ params }) => {
   const { specialMachine, loading: shareLoading } = useSelector(
     (state: RootState) => state.shareMachine,
   );
+
+  // Update displayBalance whenever balanceData changes
+  useEffect(() => {
+    if (balanceData?.balances?.total !== undefined) {
+      setDisplayBalance(balanceData.balances.total);
+    }
+  }, [balanceData]);
 
   useEffect(() => {
     if (params.id.includes("share")) {
@@ -132,8 +139,13 @@ const ProductDetails = ({ params }) => {
         if (purchaseSpecialShares.fulfilled.match(resultAction)) {
           toast.success("Share purchase successful!");
           setIsModalOpen(false);
-          // Refresh user balance after purchase
-          dispatch(getUserBalance(userId));
+          
+          // Update balance immediately after purchase
+          await dispatch(getUserBalance(userId));
+          
+          // Immediate UI update for better user experience
+          const totalCost = shareQuantity * (product?.sharePrice || 0);
+          setDisplayBalance(prev => Math.max(0, prev - totalCost));
         } else {
           console.error("Share purchase failed:", resultAction.error);
           const errorMessage =
@@ -157,6 +169,13 @@ const ProductDetails = ({ params }) => {
         if (purchaseAndAssignMachine.fulfilled.match(resultAction)) {
           toast.success("Purchase successful!");
           setIsModalOpen(false);
+          
+          // Update balance immediately after purchase for regular machines too
+          await dispatch(getUserBalance(userId));
+          
+          // Immediate UI update for better user experience
+          const totalCost = product.priceRange || 0;
+          setDisplayBalance(prev => Math.max(0, prev - totalCost));
         } else {
           console.error("Purchase failed:", resultAction.error);
           const errorMessage =
@@ -196,7 +215,7 @@ const ProductDetails = ({ params }) => {
           </div>
           <div className="text-right">
             <div className="text-xl font-bold text-green-400">
-              ${(balanceData?.balances?.total || 0).toLocaleString()}
+              ${displayBalance.toLocaleString()}
             </div>
             <div className="text-sm text-gray-400"></div>
           </div>
@@ -205,7 +224,8 @@ const ProductDetails = ({ params }) => {
     );
 
   // Show loading screen while data is loading
-  const isInitialLoading = productsLoading || (isShareRoute && shareLoading && !specialMachine);
+  const isInitialLoading =
+    productsLoading || (isShareRoute && shareLoading && !specialMachine);
   if (isInitialLoading && !isPurchasing) {
     return (
       <LandingLayout>
@@ -493,8 +513,8 @@ const ProductDetails = ({ params }) => {
         sharePrice={sharePrice}
         profitPerShare={profitPerShare}
         balances={{
-          total: balanceData?.balances?.total || 0,
-          available: balanceData?.balances?.total || 0,
+          total: displayBalance, // Use displayBalance here instead
+          available: displayBalance, // Use displayBalance here instead
         }}
         isProcessing={isProcessing}
       />
