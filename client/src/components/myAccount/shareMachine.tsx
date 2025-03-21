@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast"; // Custom toast hook (alternatively you could use a simple notification component)
 
 const UserSharesDashboard = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -45,6 +46,18 @@ const UserSharesDashboard = () => {
   const [sellDialogOpen, setSellDialogOpen] = useState(false);
   const [sharesToSell, setSharesToSell] = useState(1);
   const [sellLoading, setSellLoading] = useState(false);
+  const [sellError, setSellError] = useState("");
+
+  // Define a notification system (replacing toast)
+  const [notification, setNotification] = useState({ show: false, message: "", type: "" });
+
+  // Function to show notifications
+  const showNotification = (message, type = "success") => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => {
+      setNotification({ show: false, message: "", type: "" });
+    }, 5000);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,6 +69,7 @@ const UserSharesDashboard = () => {
         await dispatch(getUserShareDetails(user.id)).unwrap();
       } catch (err) {
         console.error("Error fetching shares:", err);
+        showNotification("Failed to fetch shares data", "error");
       }
     };
 
@@ -65,11 +79,7 @@ const UserSharesDashboard = () => {
   // Effect to refresh data after successful sale
   useEffect(() => {
     if (saleSuccess) {
-      toast({
-        title: "Sale Successful",
-        description: "Your shares have been sold successfully.",
-        variant: "success",
-      });
+      showNotification("Your shares have been sold successfully");
 
       // Refresh user share data
       if (user?.id) {
@@ -81,6 +91,7 @@ const UserSharesDashboard = () => {
 
       // Close dialog
       setSellDialogOpen(false);
+      setSellError("");
     }
   }, [saleSuccess, dispatch, user]);
 
@@ -88,14 +99,30 @@ const UserSharesDashboard = () => {
     setSelectedShare(share);
     setSharesToSell(1); // Reset to 1
     setSellDialogOpen(true);
+    setSellError("");
+  };
+
+  const validateShareSale = () => {
+    if (!selectedShare) {
+      setSellError("No share selected");
+      return false;
+    }
+    
+    if (sharesToSell <= 0) {
+      setSellError("Shares to sell must be greater than 0");
+      return false;
+    }
+    
+    if (sharesToSell > selectedShare.numberOfShares) {
+      setSellError(`You only have ${selectedShare.numberOfShares} shares available to sell`);
+      return false;
+    }
+    
+    return true;
   };
 
   const handleSellSubmit = async () => {
-    if (
-      !selectedShare ||
-      sharesToSell <= 0 ||
-      sharesToSell > selectedShare.numberOfShares
-    ) {
+    if (!validateShareSale()) {
       return;
     }
 
@@ -108,16 +135,25 @@ const UserSharesDashboard = () => {
         }),
       ).unwrap();
 
-      // The success useEffect will handle toast and data refresh
+      // The success useEffect will handle notification and data refresh
     } catch (error) {
-      toast({
-        title: "Sale Failed",
-        description:
-          error.message || "Failed to sell shares. Please try again.",
-        variant: "destructive",
-      });
+      showNotification(
+        error.message || "Failed to sell shares. Please try again.",
+        "error"
+      );
+      setSellError(error.message || "Failed to sell shares");
     } finally {
       setSellLoading(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const value = parseInt(e.target.value) || 0;
+    setSharesToSell(value);
+    
+    // Clear error when user modifies input
+    if (selectedShare && value > 0 && value <= selectedShare.numberOfShares) {
+      setSellError("");
     }
   };
 
@@ -145,8 +181,6 @@ const UserSharesDashboard = () => {
               <div className="h-3 w-3 animate-pulse rounded-full bg-[#21eb00]" />
               <span className="text-sm font-medium text-zinc-400">active</span>
             </div>
-
-            {/* Removed circular progress indicator */}
           </div>
 
           <div className="mt-6">
@@ -225,6 +259,26 @@ const UserSharesDashboard = () => {
 
   return (
     <div className="min-h-screen space-y-8 bg-zinc-950 px-6">
+      {/* Simple notification component */}
+      {notification.show && (
+        <div 
+          className={`fixed right-4 top-4 z-50 rounded-md p-4 shadow-md ${
+            notification.type === "error" 
+              ? "bg-red-500 text-white" 
+              : "bg-[#21eb00] text-black"
+          }`}
+        >
+          <div className="flex items-center space-x-2">
+            {notification.type === "error" ? (
+              <AlertCircle className="h-5 w-5" />
+            ) : (
+              <div className="h-5 w-5" />
+            )}
+            <p>{notification.message}</p>
+          </div>
+        </div>
+      )}
+
       <div className="mx-auto max-w-7xl">
         <div className="mb-8">
           <h2 className="mb-2 text-3xl font-bold text-white">
@@ -251,7 +305,9 @@ const UserSharesDashboard = () => {
       </div>
 
       {/* Sell Dialog */}
-      <Dialog open={sellDialogOpen} onOpenChange={setSellDialogOpen}>
+      <Dialog open={sellDialogOpen} onOpenChange={(open) => {
+        if (!sellLoading) setSellDialogOpen(open);  // Prevent closing while processing
+      }}>
         <DialogContent className="border border-zinc-800 bg-zinc-950 text-white">
           <DialogHeader>
             <DialogTitle>Sell Shares</DialogTitle>
@@ -280,11 +336,12 @@ const UserSharesDashboard = () => {
                   min="1"
                   max={selectedShare.numberOfShares}
                   value={sharesToSell}
-                  onChange={(e) =>
-                    setSharesToSell(parseInt(e.target.value) || 1)
-                  }
+                  onChange={handleInputChange}
                   className="border-zinc-700 bg-zinc-900"
                 />
+                {sellError && (
+                  <p className="mt-2 text-sm text-red-500">{sellError}</p>
+                )}
               </div>
 
               <div className="rounded-xl bg-zinc-900/50 p-4">
@@ -309,8 +366,14 @@ const UserSharesDashboard = () => {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setSellDialogOpen(false)}
-              className="border-zinc-700 text-white"
+              onClick={() => {
+                if (!sellLoading) {
+                  setSellDialogOpen(false);
+                  setSellError("");
+                }
+              }}
+              disabled={sellLoading}
+              className="border-zinc-700 text-white hover:bg-zinc-800"
             >
               Cancel
             </Button>
