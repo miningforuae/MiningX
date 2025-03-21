@@ -112,7 +112,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     { link: "/profile", icon: Settings, label: "Dashboard" },
     { link: "/profile/TotalMachine", icon: Settings, label: "Total Machine" },
     { link: "/profile/UserProfile", icon: User, label: "Profile" },
-    { link: "/profile/withdraw", icon: User, label: "Withdraw" },
+    { link: "/profile/Payments", icon: User, label: "Payments" },
     { link: "#", icon: LogOut, label: "Logout" },
   ];
 
