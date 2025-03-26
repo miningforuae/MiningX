@@ -49,7 +49,11 @@ const UserSharesDashboard = () => {
   const [sellError, setSellError] = useState("");
 
   // Define a notification system (replacing toast)
-  const [notification, setNotification] = useState({ show: false, message: "", type: "" });
+  const [notification, setNotification] = useState({
+    show: false,
+    message: "",
+    type: "",
+  });
 
   // Function to show notifications
   const showNotification = (message, type = "success") => {
@@ -107,17 +111,19 @@ const UserSharesDashboard = () => {
       setSellError("No share selected");
       return false;
     }
-    
+
     if (sharesToSell <= 0) {
       setSellError("Shares to sell must be greater than 0");
       return false;
     }
-    
+
     if (sharesToSell > selectedShare.numberOfShares) {
-      setSellError(`You only have ${selectedShare.numberOfShares} shares available to sell`);
+      setSellError(
+        `You only have ${selectedShare.numberOfShares} shares available to sell`,
+      );
       return false;
     }
-    
+
     return true;
   };
 
@@ -139,7 +145,7 @@ const UserSharesDashboard = () => {
     } catch (error) {
       showNotification(
         error.message || "Failed to sell shares. Please try again.",
-        "error"
+        "error",
       );
       setSellError(error.message || "Failed to sell shares");
     } finally {
@@ -150,7 +156,7 @@ const UserSharesDashboard = () => {
   const handleInputChange = (e) => {
     const value = parseInt(e.target.value) || 0;
     setSharesToSell(value);
-    
+
     // Clear error when user modifies input
     if (selectedShare && value > 0 && value <= selectedShare.numberOfShares) {
       setSellError("");
@@ -158,6 +164,7 @@ const UserSharesDashboard = () => {
   };
 
   const ShareCard = ({ share }) => {
+    console.log("🚀 ~ ShareCard ~ share:", share);
     const totalProfit = share.profitPerShare * share.numberOfShares;
     const hasProfit = totalProfit > 0;
 
@@ -208,7 +215,7 @@ const UserSharesDashboard = () => {
             </div>
 
             {/* Monthly profit info */}
-            <div className="rounded-xl bg-zinc-900/50 p-4 transition-colors duration-300 group-hover:bg-zinc-900">
+            {/* <div className="rounded-xl bg-zinc-900/50 p-4 transition-colors duration-300 group-hover:bg-zinc-900">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <TrendingUp className="h-5 w-5 text-[#21eb00]" />
@@ -218,7 +225,7 @@ const UserSharesDashboard = () => {
                   ${share.expectedMonthlyProfit.toFixed(2)}
                 </p>
               </div>
-            </div>
+            </div> */}
 
             {/* Investment info */}
             <div className="rounded-xl bg-zinc-900/50 p-4 transition-colors duration-300 group-hover:bg-zinc-900">
@@ -261,10 +268,10 @@ const UserSharesDashboard = () => {
     <div className="min-h-screen space-y-8 bg-zinc-950 px-6">
       {/* Simple notification component */}
       {notification.show && (
-        <div 
+        <div
           className={`fixed right-4 top-4 z-50 rounded-md p-4 shadow-md ${
-            notification.type === "error" 
-              ? "bg-red-500 text-white" 
+            notification.type === "error"
+              ? "bg-red-500 text-white"
               : "bg-[#21eb00] text-black"
           }`}
         >
@@ -305,9 +312,12 @@ const UserSharesDashboard = () => {
       </div>
 
       {/* Sell Dialog */}
-      <Dialog open={sellDialogOpen} onOpenChange={(open) => {
-        if (!sellLoading) setSellDialogOpen(open);  // Prevent closing while processing
-      }}>
+      <Dialog
+        open={sellDialogOpen}
+        onOpenChange={(open) => {
+          if (!sellLoading) setSellDialogOpen(open); // Prevent closing while processing
+        }}
+      >
         <DialogContent className="border border-zinc-800 bg-zinc-950 text-white">
           <DialogHeader>
             <DialogTitle>Sell Shares</DialogTitle>
@@ -340,7 +350,7 @@ const UserSharesDashboard = () => {
                   className="border-zinc-700 bg-zinc-900"
                 />
                 {sellError && (
-                  <p className="mt-2 text-sm text-red-500">{sellError}</p>
+                  <p className="text-red-500 mt-2 text-sm">{sellError}</p>
                 )}
               </div>
 
@@ -373,7 +383,7 @@ const UserSharesDashboard = () => {
                 }
               }}
               disabled={sellLoading}
-              className="border-zinc-700 text-white hover:bg-zinc-800"
+              className="border-zinc-800 bg-transparent text-zinc-400 hover:bg-zinc-800"
             >
               Cancel
             </Button>

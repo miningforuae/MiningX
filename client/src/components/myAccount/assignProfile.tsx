@@ -37,7 +37,8 @@ const UserMachinesDashboard = () => {
     React.useState<UserProfitSummary | null>(null);
   const [profitLoading, setProfitLoading] = React.useState(true);
   const [error1, setError] = React.useState<string | null>(null);
-  const [profitPercentages, setProfitPercentages] = React.useState<ProfitPercentageResponse | null>(null);
+  const [profitPercentages, setProfitPercentages] =
+    React.useState<ProfitPercentageResponse | null>(null);
 
   const [selectedMachine, setSelectedMachine] =
     React.useState<UserMachine | null>(null);
@@ -48,15 +49,16 @@ const UserMachinesDashboard = () => {
         setProfitLoading(false);
         return;
       }
-  
+
       try {
         setError(null);
         setProfitLoading(true);
-        const [machinesResult, profitResult, percentagesResult] = await Promise.all([
-          dispatch(fetchUserMachines(user.email)).unwrap(),
-          dispatch(fetchUserTotalProfit(user.email)).unwrap(),
-          dispatch(fetchProfitPercentages(user.email)).unwrap(),
-        ]);
+        const [machinesResult, profitResult, percentagesResult] =
+          await Promise.all([
+            dispatch(fetchUserMachines(user.email)).unwrap(),
+            dispatch(fetchUserTotalProfit(user.email)).unwrap(),
+            dispatch(fetchProfitPercentages(user.email)).unwrap(),
+          ]);
         setTotalProfitData(profitResult);
         setProfitPercentages(percentagesResult);
       } catch (err: any) {
@@ -65,7 +67,7 @@ const UserMachinesDashboard = () => {
         setProfitLoading(false);
       }
     };
-  
+
     fetchData();
   }, [dispatch, user, isAuthenticated]);
 
@@ -81,7 +83,6 @@ const UserMachinesDashboard = () => {
     machine: UserMachine;
     onSellClick: (machine: UserMachine) => void;
     profitPercentages?: ProfitPercentageResponse;
-
   }> = ({ machine, onSellClick }) => {
     const [profitStatus, setProfitStatus] =
       React.useState<ProfitUpdateStatus | null>(null);
@@ -96,7 +97,9 @@ const UserMachinesDashboard = () => {
     const getMachinePercentage = () => {
       if (!profitPercentages?.machines) return "0";
       const machineData = profitPercentages.machines.find(
-        m => m.machineId === (typeof machine._id === "string" ? machine._id : machine.machine._id)
+        (m) =>
+          m.machineId ===
+          (typeof machine._id === "string" ? machine._id : machine.machine._id),
       );
       return machineData?.percentage || "0";
     };
@@ -115,11 +118,11 @@ const UserMachinesDashboard = () => {
 
     return (
       <div className="group relative overflow-hidden rounded-2xl border border-zinc-800 bg-black transition-all duration-500 hover:border-[#21eb00] hover:shadow-lg hover:shadow-[#21eb00]/10">
-          <div className="absolute right-0 top-0 z-10 rounded-bl-lg bg-[#21eb00] px-3 py-1">
-        <span className="text-sm font-bold text-black">
-          {getMachinePercentage()}%
-        </span>
-      </div>
+        <div className="absolute right-0 top-0 z-10 rounded-bl-lg bg-[#21eb00] px-3 py-1">
+          <span className="text-sm font-bold text-black">
+            {getMachinePercentage()}%
+          </span>
+        </div>
         <div className="absolute inset-0 bg-gradient-to-br from-[#21eb00]/5 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
         <div className="relative p-6">
@@ -235,25 +238,26 @@ const UserMachinesDashboard = () => {
         </div>
 
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {userMachines && userMachines.length > 0 ? (
-  userMachines.filter(machine => machine.status === "active").map((machine) => (
-    <MachineCard
-      key={
-        typeof machine._id === "string"
-          ? machine._id
-          : (typeof machine.machine === "object" &&
-              machine.machine._id) ||
-            "fallback-key"
-      }
-      machine={machine}
-      profitPercentages={profitPercentages}
-      onSellClick={(machine) => {
-        setSelectedMachine(machine);
-        setSaleModalOpen(true);
-      }}
-    />
-  ))
-
+          {userMachines && userMachines.length > 0 ? (
+            userMachines
+              .filter((machine) => machine.status === "active")
+              .map((machine) => (
+                <MachineCard
+                  key={
+                    typeof machine._id === "string"
+                      ? machine._id
+                      : (typeof machine.machine === "object" &&
+                          machine.machine._id) ||
+                        "fallback-key"
+                  }
+                  machine={machine}
+                  profitPercentages={profitPercentages}
+                  onSellClick={(machine) => {
+                    setSelectedMachine(machine);
+                    setSaleModalOpen(true);
+                  }}
+                />
+              ))
           ) : (
             <div className="col-span-full flex min-h-[200px] items-center justify-center rounded-2xl border border-zinc-800 bg-black">
               <p className="text-zinc-400">

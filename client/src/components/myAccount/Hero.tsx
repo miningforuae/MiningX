@@ -2,42 +2,52 @@
 
 "use client";
 import React, { useEffect } from "react";
-import { FileText, Heart, DollarSign, BarChart3, Wallet, Coins } from "lucide-react";
+import {
+  FileText,
+  Heart,
+  DollarSign,
+  BarChart3,
+  Wallet,
+  Coins,
+} from "lucide-react";
 import { ChevronRight } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "@/lib/store/store";
 import { useRouter } from "next/navigation";
 import { fetchUserMachines } from "@/lib/feature/userMachine/usermachineApi";
 import { fetchUserWithdrawals } from "@/lib/feature/withdraw/withdrawalSlice";
-import { getUserBalance } from '@/lib/feature/userMachine/balanceSlice';
+import { getUserBalance } from "@/lib/feature/userMachine/balanceSlice";
 
 const DashboardHero = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  
+
   const { userMachines, isLoading: machinesLoading } = useSelector(
-    (state: RootState) => state.userMachine
+    (state: RootState) => state.userMachine,
   );
   const { withdrawals, isLoading: withdrawalsLoading } = useSelector(
-    (state: RootState) => state.withdrawal
+    (state: RootState) => state.withdrawal,
   );
   const { user, isAuthenticated } = useSelector(
-    (state: RootState) => state.auth
+    (state: RootState) => state.auth,
   );
   const balance = useSelector((state: RootState) => state.balance.userBalance);
-  
+
   // Update these formatted values to use the correct path
-  const formattedTotalBalance = balance?.balances?.total?.toLocaleString() || '0';
-  const formattedMiningBalance = balance?.balances?.mining?.toLocaleString() || '0';
+  const formattedTotalBalance =
+    balance?.balances?.total?.toLocaleString() || "0";
+  const formattedMiningBalance =
+    balance?.balances?.mining?.toLocaleString() || "0";
 
   useEffect(() => {
     const fetchData = async () => {
-      if (user?.id && isAuthenticated) {  // Changed from email to id based on earlier code
+      if (user?.id && isAuthenticated) {
+        // Changed from email to id based on earlier code
         try {
           await Promise.all([
             dispatch(fetchUserMachines(user.id)).unwrap(),
             dispatch(fetchUserWithdrawals({ userId: user.id })).unwrap(),
-            dispatch(getUserBalance(user.id)).unwrap()
+            dispatch(getUserBalance(user.id)).unwrap(),
           ]);
         } catch (error) {
           console.error("Error fetching data:", error);
@@ -48,16 +58,20 @@ const DashboardHero = () => {
   }, [dispatch, user, isAuthenticated]);
 
   // Calculate metrics
-  const activeMachinesCount = userMachines?.filter((m) => m.status === "active").length || 0;
-  const totalAccumulatedProfit = userMachines?.reduce(
-    (sum, machine) => sum + (machine.monthlyProfitAccumulated || 0),
-    0
-  ) || 0;
+  const activeMachinesCount =
+    userMachines?.filter((m) => m.status === "active").length || 0;
+  const totalAccumulatedProfit =
+    userMachines?.reduce(
+      (sum, machine) => sum + (machine.monthlyProfitAccumulated || 0),
+      0,
+    ) || 0;
   const totalTransactions = withdrawals?.length || 0;
-  const totalWithdrawn = withdrawals?.reduce(
-    (sum, withdrawal) => sum + (withdrawal.status === 'approved' ? withdrawal.amount : 0),
-    0
-  ) || 0;
+  const totalWithdrawn =
+    withdrawals?.reduce(
+      (sum, withdrawal) =>
+        sum + (withdrawal.status === "approved" ? withdrawal.amount : 0),
+      0,
+    ) || 0;
 
   const handleNavigation = (path: string) => {
     router.push(path);
@@ -108,9 +122,7 @@ const DashboardHero = () => {
             {value}
           </p>
           {subtitle && (
-            <p className="text-xs text-zinc-500 sm:text-sm">
-              {subtitle}
-            </p>
+            <p className="text-xs text-zinc-500 sm:text-sm">{subtitle}</p>
           )}
         </div>
         <div className="mt-3 flex items-center text-xs text-zinc-500 sm:mt-4 sm:text-sm">
@@ -124,17 +136,17 @@ const DashboardHero = () => {
     {
       icon: Wallet,
       title: "Total Balance",
-      value: `$${balance?.balances?.total?.toLocaleString() || '0'}`,
+      value: `$${balance?.balances?.total?.toLocaleString() || "0"}`,
       subtitle: "Available funds",
       path: "/profile/TotalMachine",
     },
-    // {
-    //   icon: Coins,
-    //   title: "Mining Profit",
-    //   value: `$${balance?.balances?.mining?.toLocaleString() || '0'}`,
-    //   subtitle: "Mining earnings",
-    //   path: "/profile/TotalMachine",
-    // },
+    {
+      icon: Coins,
+      title: "Mining Profit",
+      value: `$${balance?.balances?.mining?.toLocaleString() || "0"}`,
+      subtitle: "Mining earnings",
+      path: "/profile/TotalMachine",
+    },
     // {
     //   icon: FileText,
     //   title: "Active Orders",
@@ -156,7 +168,7 @@ const DashboardHero = () => {
     //   value: totalTransactions.toString(),
     //   subtitle: "All-time withdrawals",
     //   path: "/profile/withdraw",
-    // }
+    // },
   ];
 
   return (
@@ -169,7 +181,8 @@ const DashboardHero = () => {
           </span>
         </h2>
         <p className="text-xs leading-relaxed text-zinc-400 sm:text-sm lg:text-base">
-          Track your activity and manage your account settings from your personalized dashboard.
+          Track your activity and manage your account settings from your
+          personalized dashboard.
         </p>
       </div>
       <div className="mb-6 grid grid-cols-1 gap-3 px-4 sm:mb-8 sm:grid-cols-2 sm:gap-4 sm:px-0 lg:grid-cols-3 lg:gap-6 ">

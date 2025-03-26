@@ -1,10 +1,10 @@
 // src/lib/features/userMachine/transactionSlice.ts
 // @ts-nocheck
 
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axiosInstance from '@/utils/axiosInstance';
-import { RootState } from '@/lib/store/store';
-import { 
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axiosInstance from "@/utils/axiosInstance";
+import { RootState } from "@/lib/store/store";
+import {
   Transaction,
   WithdrawalPayload,
   TransactionResponse,
@@ -12,53 +12,66 @@ import {
   PurchaseResponse,
   PurchaseMachinePayload,
   EligibilityResponse,
-  SaleResponse
-} from '@/types/userMachine';
+  SaleResponse,
+} from "@/types/userMachine";
 
 // Purchase and Eligibility Thunks
 export const purchaseAndAssignMachine = createAsyncThunk<
   PurchaseResponse,
-  { 
-    userId: string; 
-    machineId: string; 
+  {
+    userId: string;
+    machineId: string;
     quantity?: number;
     machineDetails?: any; // Optional full machine details
   },
   { state: RootState; rejectValue: string }
 >(
-  'transaction/purchaseAndAssign',
-  async ({ userId, machineId, quantity = 1, machineDetails }, { rejectWithValue }) => {
+  "transaction/purchaseAndAssign",
+  async (
+    { userId, machineId, quantity = 1, machineDetails },
+    { rejectWithValue },
+  ) => {
     try {
-      const response = await axiosInstance.post<PurchaseResponse>('/api/v1/purchaseMAchine', {
-        userId,
-        machineId,
-        quantity,
-        machineDetails, // Pass additional details if available
-        type: 'MACHINE_PURCHASE',
-        status: 'completed'
-      });
+      const response = await axiosInstance.post<PurchaseResponse>(
+        "/api/v1/purchaseMAchine",
+        {
+          userId,
+          machineId,
+          quantity,
+          machineDetails, // Pass additional details if available
+          type: "MACHINE_PURCHASE",
+          status: "completed",
+        },
+      );
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to purchase machine');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to purchase machine",
+      );
     }
-  }
+  },
 );
 export const checkPurchaseEligibility = createAsyncThunk<
   EligibilityResponse,
   PurchaseMachinePayload,
   { state: RootState; rejectValue: string }
 >(
-  'transaction/checkEligibility',
+  "transaction/checkEligibility",
   async ({ userId, machineId, quantity = 1 }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get<EligibilityResponse>('/api/v1/check-eligibility', {
-        params: { userId, machineId, quantity }
-      });
+      const response = await axiosInstance.get<EligibilityResponse>(
+        "/api/v1/check-eligibility",
+        {
+          params: { userId, machineId, quantity },
+        },
+      );
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to check purchase eligibility');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to check purchase eligibility",
+      );
     }
-  }
+  },
 );
 
 // Sale Related Thunks
@@ -66,37 +79,35 @@ export const sellUserMachine = createAsyncThunk<
   SaleResponse,
   string,
   { state: RootState; rejectValue: string }
->(
-  'transaction/sellMachine',
-  async (userMachineId, { rejectWithValue }) => {
-    try {
-      const response = await axiosInstance.post<SaleResponse>(
-        `/api/v1/sell/${userMachineId}`
-      );
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to sell machine');
-    }
+>("transaction/sellMachine", async (userMachineId, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.post<SaleResponse>(
+      `/api/v1/sell-machine/${userMachineId}`,
+    );
+    return response.data;
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || "Failed to sell machine",
+    );
   }
-);
+});
 
 export const getSaleHistory = createAsyncThunk<
   Transaction[],
   string,
   { state: RootState; rejectValue: string }
->(
-  'transaction/getSaleHistory',
-  async (userId, { rejectWithValue }) => {
-    try {
-      const response = await axiosInstance.get<{ sales: Transaction[] }>(
-        `/api/v1/sales-history/${userId}`
-      );
-      return response.data.sales;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch sale history');
-    }
+>("transaction/getSaleHistory", async (userId, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.get<{ sales: Transaction[] }>(
+      `/api/v1/sales-history/${userId}`,
+    );
+    return response.data.sales;
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || "Failed to fetch sale history",
+    );
   }
-);
+});
 
 // Transaction History Thunks
 export const fetchUserTransactions = createAsyncThunk<
@@ -104,37 +115,44 @@ export const fetchUserTransactions = createAsyncThunk<
   { userIdentifier: string; page?: number; limit?: number },
   { state: RootState; rejectValue: string }
 >(
-  'transaction/fetchUserTransactions',
+  "transaction/fetchUserTransactions",
   async ({ userIdentifier, page = 1, limit = 10 }, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get<TransactionResponse>(
         `/api/v1/transactions/${userIdentifier}`,
-        { params: { page, limit } }
+        { params: { page, limit } },
       );
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch transactions');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch transactions",
+      );
     }
-  }
+  },
 );
 
 export const fetchAdminTransactions = createAsyncThunk<
   TransactionResponse,
-  { page?: number; limit?: number; sortBy?: string; order?: 'asc' | 'desc' },
+  { page?: number; limit?: number; sortBy?: string; order?: "asc" | "desc" },
   { state: RootState; rejectValue: string }
 >(
-  'transaction/fetchAdminTransactions',
-  async ({ page = 1, limit = 20, sortBy = 'transactionDate', order = 'desc' }, { rejectWithValue }) => {
+  "transaction/fetchAdminTransactions",
+  async (
+    { page = 1, limit = 20, sortBy = "transactionDate", order = "desc" },
+    { rejectWithValue },
+  ) => {
     try {
       const response = await axiosInstance.get<TransactionResponse>(
-        '/api/v1/admin/transactions',
-        { params: { page, limit, sortBy, order } }
+        "/api/v1/admin/transactions",
+        { params: { page, limit, sortBy, order } },
       );
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch admin transactions');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch admin transactions",
+      );
     }
-  }
+  },
 );
 
 // Withdrawal Thunk
@@ -143,18 +161,20 @@ export const processWithdrawal = createAsyncThunk<
   WithdrawalPayload,
   { state: RootState; rejectValue: string }
 >(
-  'transaction/processWithdrawal',
+  "transaction/processWithdrawal",
   async (withdrawalData, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post<WithdrawalResponse>(
-        '/api/v1/withdrawal', 
-        withdrawalData
+        "/api/v1/withdrawal",
+        withdrawalData,
       );
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to process withdrawal');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to process withdrawal",
+      );
     }
-  }
+  },
 );
 
 interface TransactionState {
@@ -183,14 +203,14 @@ const initialState: TransactionState = {
   pagination: {
     currentPage: 1,
     totalPages: 1,
-    totalItems: 0
+    totalItems: 0,
   },
   loading: false,
-  error: null
+  error: null,
 };
 
 const transactionSlice = createSlice({
-  name: 'transaction',
+  name: "transaction",
   initialState,
   reducers: {
     clearTransactionError: (state) => {
@@ -201,7 +221,7 @@ const transactionSlice = createSlice({
     },
     clearSaleHistory: (state) => {
       state.lastSale = null;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -216,7 +236,7 @@ const transactionSlice = createSlice({
       })
       .addCase(purchaseAndAssignMachine.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'Purchase failed';
+        state.error = action.payload || "Purchase failed";
       })
       // Check Eligibility
       .addCase(checkPurchaseEligibility.fulfilled, (state, action) => {
@@ -234,7 +254,7 @@ const transactionSlice = createSlice({
       })
       .addCase(sellUserMachine.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'Sale failed';
+        state.error = action.payload || "Sale failed";
       })
       // Sale History
       .addCase(getSaleHistory.fulfilled, (state, action) => {
@@ -247,7 +267,7 @@ const transactionSlice = createSlice({
         state.pagination = {
           currentPage: action.payload.currentPage,
           totalPages: action.payload.totalPages,
-          totalItems: action.payload.totalItems
+          totalItems: action.payload.totalItems,
         };
         state.error = null;
       })
@@ -257,17 +277,14 @@ const transactionSlice = createSlice({
         state.pagination = {
           currentPage: action.payload.currentPage,
           totalPages: action.payload.totalPages,
-          totalItems: action.payload.totalItems
+          totalItems: action.payload.totalItems,
         };
         state.error = null;
       });
   },
 });
 
-export const { 
-  clearTransactionError, 
-  clearPurchaseHistory, 
-  clearSaleHistory 
-} = transactionSlice.actions;
+export const { clearTransactionError, clearPurchaseHistory, clearSaleHistory } =
+  transactionSlice.actions;
 
 export default transactionSlice.reducer;
