@@ -33,7 +33,6 @@ function Page() {
       try {
         setIsLoading(true);
 
-        // Fetch both machines and shares data concurrently
         const fetchPromises = [];
 
         // Use email for machines and id for shares based on your existing implementation

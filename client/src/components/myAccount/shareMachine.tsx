@@ -165,18 +165,18 @@ const UserSharesDashboard = () => {
 
   const ShareCard = ({ share }) => {
     console.log("🚀 ~ ShareCard ~ share:", share);
-    const totalProfit = share.profitPerShare * share.numberOfShares;
+    const totalProfit = share.totalProfitEarned;
     const hasProfit = totalProfit > 0;
 
     return (
       <div className="group relative overflow-hidden rounded-2xl border border-zinc-800 bg-black transition-all duration-500 hover:border-[#21eb00] hover:shadow-lg hover:shadow-[#21eb00]/10">
-        {/* Profit percentage badge */}
         {hasProfit && (
           <div className="absolute right-0 top-0 z-10 rounded-bl-lg bg-[#21eb00] px-3 py-1">
-            <span className="text-sm font-bold text-black">
-              {((share.profitPerShare / share.pricePerShare) * 100).toFixed(1)}%
-              ROI
-            </span>
+          <span className="text-sm font-bold text-black">
+  {(
+    (share.totalProfitEarned / share.totalInvestment) * 100 || 0
+  ).toFixed(1)}% ROI
+</span>
           </div>
         )}
 
@@ -214,20 +214,7 @@ const UserSharesDashboard = () => {
               </div>
             </div>
 
-            {/* Monthly profit info */}
-            {/* <div className="rounded-xl bg-zinc-900/50 p-4 transition-colors duration-300 group-hover:bg-zinc-900">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <TrendingUp className="h-5 w-5 text-[#21eb00]" />
-                  <span className="text-zinc-400">Monthly Profit</span>
-                </div>
-                <p className="text-xl font-bold text-white">
-                  ${share.expectedMonthlyProfit.toFixed(2)}
-                </p>
-              </div>
-            </div> */}
-
-            {/* Investment info */}
+           
             <div className="rounded-xl bg-zinc-900/50 p-4 transition-colors duration-300 group-hover:bg-zinc-900">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
@@ -250,7 +237,6 @@ const UserSharesDashboard = () => {
               </div>
             </div>
 
-            {/* Sell button */}
             <Button
               variant="outline"
               className="w-full border-zinc-700 bg-zinc-900 text-white hover:bg-[#21eb00] hover:text-black"

@@ -17,6 +17,8 @@ interface ShareMachine {
   priceRange: number;
   coinsMined: string;
   monthlyProfit: number;
+  totalProfitEarned: number;
+
 }
 
 interface UserShare {
@@ -47,6 +49,8 @@ interface ShareSummary {
     totalShares: number;
     totalInvestment: number;
     expectedMonthlyProfit: number;
+    totalProfitEarned: number; 
+
   }
 }
 
