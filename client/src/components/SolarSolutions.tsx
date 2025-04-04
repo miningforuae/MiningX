@@ -65,7 +65,7 @@ const HowItWorksSection = () => {
   // WhatsApp handler
   const openWhatsApp = () => {
     // Replace with your phone number in international format
-    const phoneNumber = "123456789";
+    const phoneNumber = "+18079074455";
     // Optional pre-filled message
     const message = "Hi, I'd like to talk to an expert about mining equipment.";
     // Create the WhatsApp URL

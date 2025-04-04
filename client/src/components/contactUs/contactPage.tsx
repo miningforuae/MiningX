@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { MapPin, Phone, Mail, ExternalLink } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import dynamic from 'next/dynamic';
+import React, { useState } from "react";
+import { MapPin, Phone, Mail, ExternalLink } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import dynamic from "next/dynamic";
 
 // Define the interface for location props
 interface Location {
@@ -26,13 +26,13 @@ interface MapComponentProps {
 }
 
 // Dynamic import of map components with no SSR
-const MapComponent = dynamic<MapComponentProps>(() => import('./Map'), {
+const MapComponent = dynamic<MapComponentProps>(() => import("./Map"), {
   ssr: false,
   loading: () => (
-    <div className="h-full w-full flex items-center justify-center bg-gray-800">
+    <div className="flex h-full w-full items-center justify-center bg-gray-800">
       <div className="text-blue-400">Loading map...</div>
     </div>
-  )
+  ),
 });
 
 const ContactPage = () => {
@@ -47,26 +47,26 @@ const ContactPage = () => {
     },
     coordinates: {
       lat: 40.7128,
-      lng: -74.0060
-    }
+      lng: -74.006,
+    },
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 p-6">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8">Contact Us</h1>
-        
-        <div className="grid md:grid-cols-2 gap-8">
+    <div className="min-h-screen bg-gray-900 p-6 text-gray-100">
+      <div className="mx-auto max-w-4xl">
+        <h1 className="mb-8 text-4xl font-bold">Contact Us</h1>
+
+        <div className="grid gap-8 md:grid-cols-2">
           {/* Contact Information Card */}
-          <Card className="bg-gray-800 border-gray-700">
+          <Card className="border-gray-700 bg-gray-800">
             <CardContent className="p-6">
-              <h2 className="text-2xl font-semibold mb-6">Get in Touch</h2>
-              
+              <h2 className="mb-6 text-2xl font-semibold">Get in Touch</h2>
+
               <div className="space-y-6">
                 <div className="flex items-start space-x-4">
-                  <MapPin className="w-6 h-6 text-blue-400 mt-1" />
+                  <MapPin className="mt-1 h-6 w-6 text-blue-400" />
                   <div>
-                    <h3 className="font-medium mb-1">Address</h3>
+                    <h3 className="mb-1 font-medium">Address</h3>
                     <p className="text-gray-400">{location.address.street}</p>
                     <p className="text-gray-400">
                       {`${location.address.city}, ${location.address.state} ${location.address.zip}`}
@@ -75,18 +75,18 @@ const ContactPage = () => {
                 </div>
 
                 <div className="flex items-start space-x-4">
-                  <Phone className="w-6 h-6 text-blue-400 mt-1" />
+                  <Phone className="mt-1 h-6 w-6 text-blue-400" />
                   <div>
-                    <h3 className="font-medium mb-1">Phone</h3>
+                    <h3 className="mb-1 font-medium">Phone</h3>
                     <p className="text-gray-400">+1 (555) 123-4567</p>
                   </div>
                 </div>
 
                 <div className="flex items-start space-x-4">
-                  <Mail className="w-6 h-6 text-blue-400 mt-1" />
+                  <Mail className="mt-1 h-6 w-6 text-blue-400" />
                   <div>
-                    <h3 className="font-medium mb-1">Email</h3>
-                    <p className="text-gray-400">contact@example.com</p>
+                    <h3 className="mb-1 font-medium">Email</h3>
+                    <p className="text-gray-400">info@ecominex.com/</p>
                   </div>
                 </div>
               </div>
@@ -94,21 +94,20 @@ const ContactPage = () => {
           </Card>
 
           {/* Map Card */}
-          <Card 
-            className={`bg-gray-800 border-gray-700 transition-all duration-300 cursor-pointer ${
-              isMapExpanded ? 'fixed inset-4 z-50' : ''
+          <Card
+            className={`cursor-pointer border-gray-700 bg-gray-800 transition-all duration-300 ${
+              isMapExpanded ? "fixed inset-4 z-50" : ""
             }`}
             onClick={() => setIsMapExpanded(!isMapExpanded)}
           >
-            <CardContent className="p-0 relative">
-              <div className="absolute top-4 right-4 z-10 bg-gray-800 rounded-full p-2">
-                <ExternalLink className="w-6 h-6 text-blue-400" />
+            <CardContent className="relative p-0">
+              <div className="absolute right-4 top-4 z-10 rounded-full bg-gray-800 p-2">
+                <ExternalLink className="h-6 w-6 text-blue-400" />
               </div>
-              <div className={`w-full rounded-lg overflow-hidden ${isMapExpanded ? 'h-full' : 'h-64 md:h-full'}`}>
-                <MapComponent 
-                  location={location} 
-                  isExpanded={isMapExpanded}
-                />
+              <div
+                className={`w-full overflow-hidden rounded-lg ${isMapExpanded ? "h-full" : "h-64 md:h-full"}`}
+              >
+                <MapComponent location={location} isExpanded={isMapExpanded} />
               </div>
             </CardContent>
           </Card>

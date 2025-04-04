@@ -61,7 +61,7 @@ const LocationSection = () => {
                   <Mail className="h-10 w-10 flex-shrink-0 text-[#20e202]" />
                   <div>
                     <h3 className="text-xl font-semibold text-white">Email</h3>
-                    <p className="text-gray-400">info@example.com</p>
+                    <p className="text-gray-400">info@ecominex.com/</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-4">
