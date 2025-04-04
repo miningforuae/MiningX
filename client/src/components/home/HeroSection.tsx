@@ -8,7 +8,7 @@ import Link from "next/link";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 
-// Define RootState interface
+// Define RootState interface for TypeScript
 interface RootState {
   auth: {
     isAuthenticated: boolean;
