@@ -182,7 +182,7 @@ const MiningHeroSlider = () => {
               className="group relative overflow-hidden rounded-full bg-green-500 px-8 py-4 text-white transition-all hover:bg-green-600"
             >
               <span className="relative z-10 flex items-center justify-center space-x-2">
-                <span>Let's Start</span>
+                <span>Let&apos;s Start</span>
               </span>
               <div className="absolute inset-0 -translate-x-full transform bg-green-400 transition-transform group-hover:translate-x-0" />
             </button>
